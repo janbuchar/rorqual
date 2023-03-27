@@ -154,6 +154,13 @@ class Artist:
             "required": True,
         }
     )
+    artist_image_url: Optional[str] = field(
+        default=None,
+        metadata={
+            "name": "artistImageUrl",
+            "type": "Attribute",
+        }
+    )
     starred: Optional[XmlDateTime] = field(
         default=None,
         metadata={
@@ -201,6 +208,13 @@ class ArtistId3:
         default=None,
         metadata={
             "name": "coverArt",
+            "type": "Attribute",
+        }
+    )
+    artist_image_url: Optional[str] = field(
+        default=None,
+        metadata={
+            "name": "artistImageUrl",
             "type": "Attribute",
         }
     )
