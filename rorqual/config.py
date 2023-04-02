@@ -13,7 +13,8 @@ class Config:
 
     @classmethod
     def from_file(cls) -> "Config":
-        config = tomli.load((Path(user_config_dir("rorqual")) / "config.toml").open("rb"))
+        with (Path(user_config_dir("rorqual")) / "config.toml").open("rb") as file:
+            config = tomli.load(file)
 
         return cls(
             subsonic_url=config["subsonic"]["url"],

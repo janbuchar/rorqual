@@ -15,11 +15,10 @@ from subsonic.subsonic_rest_api import AlbumId3, AlbumWithSongsId3, ArtistId3, S
 class SubsonicClient:
     common_params = httpx.QueryParams({"v": "1.16.1", "c": "rorqual"})
 
-    def __init__(self, client: httpx.AsyncClient) -> None:
+    def __init__(self, client: httpx.AsyncClient, config: Config) -> None:
         self.client = client
         self.parser = XmlParser(context=XmlContext())
-        self.config = Config.from_file()
-        client.base_url = self.config.subsonic_url
+        self.config = config
 
     def _auth_params(self) -> httpx.QueryParams:
         salt = secrets.token_urlsafe(12)
