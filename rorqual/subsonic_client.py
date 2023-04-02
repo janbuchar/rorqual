@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import asyncio
 import hashlib
 import secrets
 
@@ -53,12 +56,70 @@ class SubsonicClient:
 
         return albums.album
 
-    async def get_album_details(self, album_id: int) -> AlbumWithSongsId3:
+    async def get_album_details(self, album_id: str) -> AlbumWithSongsId3:
         response = await self.client.get(
             "/rest/getAlbum",
-            params=self._auth_params().merge(self.common_params).merge(httpx.QueryParams({"id": str(album_id)})),
+            params=self._auth_params().merge(self.common_params).merge(httpx.QueryParams({"id": album_id})),
         )
         album = self.parser.from_string(response.text, SubsonicResponse).album
         assert album is not None
 
         return album
+
+    async def stream(self, song_id: str, buffer: Buffer) -> None:
+        async with self.client.stream(
+            "GET",
+            "/rest/stream",
+            params=self._auth_params().merge(self.common_params).merge(httpx.QueryParams({"id": song_id})),
+        ) as response:
+            buffer.allocate(int(response.headers["content-length"]))
+            try:
+                async for chunk in response.aiter_raw():
+                    buffer.write(chunk)
+            finally:
+                buffer.finalize()
+
+
+class Buffer:
+    def __init__(self) -> None:
+        self.data = bytearray()
+        self.bytes_written = 0
+        self.cursor = 0
+        self.started = asyncio.Event()
+        self.finished = asyncio.Event()
+        self.data_written = asyncio.Event()
+
+    def allocate(self, size: int) -> None:
+        self.started.set()
+        self.data = bytearray(size)
+
+    def write(self, data: bytes) -> None:
+        self.data[self.bytes_written : self.bytes_written + len(data)] = data
+        self.bytes_written += len(data)
+        self.data_written.set()
+
+    async def read(self, size: int) -> bytes:
+        await self.started.wait()
+        requested_pos = min(self.cursor + size, len(self.data))
+
+        finished = asyncio.create_task(self.finished.wait())
+        while not finished.done() and requested_pos > self.bytes_written:
+            data_written = asyncio.create_task(self.data_written.wait())
+            await asyncio.wait({finished, data_written}, return_when=asyncio.FIRST_COMPLETED)
+            self.data_written.clear()
+            data_written.cancel()
+
+        finished.cancel()
+
+        try:
+            return self.data[self.cursor : requested_pos]
+        finally:
+            self.cursor = requested_pos
+
+    def seek(self, pos: int) -> int:
+        self.cursor = min(pos, len(self.data))
+        self.data_written.set()
+        return self.cursor
+
+    def finalize(self) -> None:
+        self.finished.set()
