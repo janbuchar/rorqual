@@ -18,7 +18,13 @@ class AlbumTree(Widget):
             super().__init__()
             self.album = album
 
-    BINDINGS = [("j", "down", "Down"), ("k", "up", "Up"), ("a", "add_to_playlist", "Add to playlist")]
+    BINDINGS = [
+        ("j", "down", "Down"),
+        ("k", "up", "Up"),
+        ("l", "expand", "Expand"),
+        ("h", "collapse", "Collapse"),
+        ("a", "add_to_playlist", "Add to playlist"),
+    ]
 
     def __init__(self, subsonic: SubsonicClient, id: str) -> None:
         super().__init__(id=id)
@@ -53,6 +59,16 @@ class AlbumTree(Widget):
 
     def action_up(self) -> None:
         self.query_one(Tree).action_cursor_up()
+
+    def action_expand(self) -> None:
+        tree = self.query_one(Tree)
+        if tree.cursor_node:
+            tree.cursor_node.expand()
+
+    def action_collapse(self) -> None:
+        tree = self.query_one(Tree)
+        if tree.cursor_node:
+            tree.cursor_node.collapse()
 
     async def action_add_to_playlist(self) -> None:
         node = self.query_one(Tree).cursor_node
