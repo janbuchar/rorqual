@@ -245,10 +245,10 @@ class RorqualApp(App):
         self.playlist.tracks = message.album.song
 
     def on_playlist_track_selected(self, message: Playlist.TrackSelected) -> None:
-        self.playback_progress.track = message.track
-        self.playlist.track_index = message.track_index
-
         if message.track_index != self.playlist.track_index:
+            self.playback_progress.track = message.track
+            self.playlist.track_index = message.track_index
+
             self.player.play(message.track.id)
             if next_track := self.playlist.next_track:
                 self.player.set_next_track(next_track.id)
