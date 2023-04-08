@@ -1,27 +1,13 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Callable, Generic, Literal, ParamSpec
+from typing import Literal
 
 import httpx
 from mpv import MPV, MpvEvent, MpvEventID
 
-from .subsonic_client import Buffer, SubsonicClient
-
-TArgs = ParamSpec("TArgs")
-
-
-class CallbackList(Generic[TArgs]):
-    def __init__(self) -> None:
-        self.callbacks = list[Callable[TArgs, Any]]()
-
-    def register(self, callback: Callable[TArgs, Any]) -> None:
-        self.callbacks.append(callback)
-
-    def __call__(self, *args: TArgs.args, **kwargs: TArgs.kwargs) -> Any:
-        for callback in self.callbacks:
-            callback(*args, **kwargs)
-
+from .callbacks import CallbackList
+from .stream_manager import Buffer, StreamManager
 
 PlaybackState = Literal["stopped", "playing", "paused"]
 
@@ -29,9 +15,9 @@ PlaybackState = Literal["stopped", "playing", "paused"]
 class SubsonicPlayer:
     PROTOCOL = "subsonic"
 
-    def __init__(self, client: SubsonicClient, loop: asyncio.AbstractEventLoop) -> None:
-        self.client = client
-        self.loop = loop
+    def __init__(self, streams: StreamManager, loop: asyncio.AbstractEventLoop) -> None:
+        self._streams = streams
+        self._loop = loop
 
         self.time_position_callbacks = CallbackList[float | None]()
         self.next_track_start_callbacks = CallbackList[[]]()
@@ -51,9 +37,7 @@ class SubsonicPlayer:
         if parsed_url.scheme != self.PROTOCOL:
             raise ValueError("Unsupported protocol")
 
-        buffer = Buffer()
-        task = self.loop.create_task(self.client.stream(parsed_url.host, buffer))
-        return SubsonicStreamFrontend(buffer, task, self.loop)
+        return SubsonicStreamFrontend(self._streams.fetch(parsed_url.host), self._loop)
 
     def _prefix_id(self, id: str) -> str:
         return f"{self.PROTOCOL}://{id}"
@@ -68,6 +52,9 @@ class SubsonicPlayer:
 
     def toggle_paused(self) -> None:
         self._mpv.pause = not self._mpv.pause
+
+    def stop(self) -> None:
+        self._mpv.stop(keep_playlist=False)
 
     def handle_event(self, event: MpvEvent) -> None:
         match event.event_id.value:
@@ -92,9 +79,8 @@ class SubsonicStreamFrontend:
     Bridges the MPV stream interface (thread-based) and the rest of the app (coroutine-based)
     """
 
-    def __init__(self, buffer: Buffer, stream_task: asyncio.Task, loop: asyncio.AbstractEventLoop) -> None:
+    def __init__(self, buffer: Buffer, loop: asyncio.AbstractEventLoop) -> None:
         self.buffer = buffer
-        self.stream_task = stream_task
         self.loop = loop
 
     def read(self, size: int) -> bytes:
@@ -102,6 +88,3 @@ class SubsonicStreamFrontend:
 
     def seek(self, pos: int) -> int:
         return self.buffer.seek(pos)
-
-    def close(self) -> None:
-        self.stream_task.cancel()

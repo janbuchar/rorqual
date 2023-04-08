@@ -6,6 +6,7 @@ from textual.features import FeatureFlag
 
 from rorqual.app import RorqualApp
 from rorqual.config import Config
+from rorqual.stream_manager import StreamManager
 from rorqual.subsonic_client import SubsonicClient
 from rorqual.subsonic_player import SubsonicPlayer
 
@@ -21,8 +22,9 @@ def main(dev: bool = False):
         config = Config.from_file()
 
         async with SubsonicClient.create(config) as subsonic:
-            player = SubsonicPlayer(subsonic, asyncio.get_running_loop())
-            app = RorqualApp(subsonic, player)
+            stream_manager = StreamManager(subsonic, config)
+            player = SubsonicPlayer(stream_manager, asyncio.get_running_loop())
+            app = RorqualApp(subsonic, player, stream_manager)
             await app.run_async()
 
     asyncio.run(run_rorqual())

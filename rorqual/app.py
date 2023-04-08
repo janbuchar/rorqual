@@ -1,7 +1,9 @@
 from itertools import groupby
 
+from rich.color import Color, ColorType
 from rich.console import RenderableType
 from rich.emoji import Emoji
+from rich.style import Style
 from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical
 from textual.coordinate import Coordinate
@@ -10,9 +12,11 @@ from textual.reactive import reactive, var
 from textual.widget import Widget
 from textual.widgets import DataTable, Tree
 
-from rorqual.subsonic_client import SubsonicClient
-from rorqual.subsonic_player import PlaybackState, SubsonicPlayer
 from subsonic.subsonic_rest_api import AlbumId3, AlbumWithSongsId3, ArtistId3, Child
+
+from .stream_manager import FetchingState, StreamManager
+from .subsonic_client import SubsonicClient
+from .subsonic_player import PlaybackState, SubsonicPlayer
 
 
 class AlbumTree(Widget):
@@ -91,7 +95,13 @@ class Playlist(Widget):
     tracks = reactive(list[Child]())
     track_index = reactive[int | None](None)
     playback_state = reactive[PlaybackState]("stopped")
-    highlighted_row = var[int](0)
+
+    _highlighted_row = var[int](0)
+
+    def __init__(self, stream_manager: StreamManager):
+        super().__init__()
+        self._stream_manager = stream_manager
+        self._fetching_state = dict[str, FetchingState]()
 
     @property
     def current_track(self) -> Child | None:
@@ -106,6 +116,8 @@ class Playlist(Widget):
             return None
 
         return self.tracks[self.track_index + 1]
+
+    muted_text = Style(color=Color(name="muted", type=ColorType.STANDARD, number=8))
 
     BINDINGS = [
         ("j", "down", "Down"),
@@ -131,7 +143,13 @@ class Playlist(Widget):
         table.add_column("Time", width=5)
         yield table
 
+    def on_mount(self) -> None:
+        self._stream_manager.fetching_state_callbacks.register(self.on_fetch_state_change)
+
     def watch_tracks(self, new_tracks: list[Child]) -> None:
+        for track in new_tracks:
+            self._stream_manager.fetch(track.id)
+
         self._fill_table()
 
     def watch_track_index(self, new_track_index: int | None) -> None:
@@ -144,23 +162,28 @@ class Playlist(Widget):
         table = self.query_one(DataTable)
         table.clear()
 
-        if self.playback_state == "playing":
-            icon = Emoji("play_button")
-        elif self.playback_state == "paused":
-            icon = Emoji("pause_button")
-        else:
-            icon = None
-
         for index, track in enumerate(self.tracks):
-            table.add_row(
-                icon if index == self.track_index else None,
-                track.track,
-                track.title,
-                duration(track.duration or 0),
-                key=track.id,
-            )
+            if index == self.track_index:
+                if self.playback_state == "playing":
+                    icon = Emoji("play_button")
+                elif self.playback_state == "paused":
+                    icon = Emoji("pause_button")
+                else:
+                    icon = None
+            else:
+                fetch_state = self._fetching_state.get(track.id, "pending")
+                if fetch_state == "pending":
+                    icon = Emoji("stopwatch", style=self.muted_text)
+                elif fetch_state == "fetching":
+                    icon = Emoji("down_arrow", style=self.muted_text)
+                elif fetch_state == "done":
+                    icon = Emoji("heavy_check_mark", style=self.muted_text)
+                else:
+                    icon = None
 
-        table.cursor_coordinate = Coordinate(min(len(self.tracks), self.highlighted_row), 0)
+            table.add_row(icon, track.track, track.title, duration(track.duration or 0), key=track.id)
+
+        table.cursor_coordinate = Coordinate(min(len(self.tracks), self._highlighted_row), 0)
 
     def on_data_table_row_selected(self, message: DataTable.RowSelected) -> None:
         for track in self.tracks:
@@ -169,7 +192,11 @@ class Playlist(Widget):
                 return
 
     def on_data_table_row_highlighted(self, message: DataTable.RowHighlighted) -> None:
-        self.highlighted_row = message.cursor_row
+        self._highlighted_row = message.cursor_row
+
+    def on_fetch_state_change(self, id: str, state: FetchingState) -> None:
+        self._fetching_state[id] = state
+        self._fill_table()
 
     def action_down(self) -> None:
         self.query_one(DataTable).action_cursor_down()
@@ -217,15 +244,16 @@ class RorqualApp(App):
     }
     """
 
-    def __init__(self, subsonic: SubsonicClient, player: SubsonicPlayer) -> None:
+    def __init__(self, subsonic: SubsonicClient, player: SubsonicPlayer, stream_manager: StreamManager) -> None:
         super().__init__()
         self.subsonic = subsonic
         self.player = player
+        self.stream_manager = stream_manager
 
     def compose(self) -> ComposeResult:
         yield AlbumTree(self.subsonic)
         with Vertical():
-            yield Playlist()
+            yield Playlist(self.stream_manager)
             yield PlaybackProgress()
 
     @property
@@ -242,6 +270,8 @@ class RorqualApp(App):
         self.player.playback_state_callbacks.register(self.on_playback_state_change)
 
     def on_album_tree_add_album_to_playlist(self, message: AlbumTree.AddAlbumToPlaylist) -> None:
+        self.player.stop()
+        self.stream_manager.abort_prefetching()
         self.playlist.tracks = message.album.song
 
     def on_playlist_track_selected(self, message: Playlist.TrackSelected) -> None:
