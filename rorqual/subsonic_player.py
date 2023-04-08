@@ -45,10 +45,6 @@ class SubsonicPlayer:
         self._mpv.observe_property("filename", self.dummy_property_handler)
         self._mpv.observe_property("playlist-current-pos", self.dummy_property_handler)
 
-        self._paused = False
-        self._playing_track: str | None = None
-        self._playlist = list[str]()
-
     def _open(self, url: str) -> SubsonicStreamFrontend:
         parsed_url = httpx.URL(url)
 
@@ -71,11 +67,7 @@ class SubsonicPlayer:
         self._mpv.playlist_append(self._prefix_id(id))
 
     def toggle_paused(self) -> None:
-        self._mpv.pause = not self._paused
-
-    @property
-    def playing_track(self) -> str | None:
-        return self._playing_track
+        self._mpv.pause = not self._mpv.pause
 
     def handle_event(self, event: MpvEvent) -> None:
         match event.event_id.value:
@@ -83,10 +75,7 @@ class SubsonicPlayer:
                 if event.data.name == "time-pos":
                     self.time_position_callbacks(event.data.value)
                 if event.data.name == "pause":
-                    self._paused = event.data.value
-                    self.playback_state_callbacks("paused" if self._paused else "playing")
-                if event.data.name == "filename":
-                    self._playing_track = event.data.value
+                    self.playback_state_callbacks("paused" if event.data.value else "playing")
                 if event.data.name == "playlist-current-pos":
                     match event.data.value:
                         case 1:

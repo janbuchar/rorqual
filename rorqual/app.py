@@ -248,7 +248,7 @@ class RorqualApp(App):
         self.playback_progress.track = message.track
         self.playlist.track_index = message.track_index
 
-        if message.track.id != self.player.playing_track:
+        if message.track_index != self.playlist.track_index:
             self.player.play(message.track.id)
             if next_track := self.playlist.next_track:
                 self.player.set_next_track(next_track.id)
