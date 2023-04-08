@@ -1,6 +1,7 @@
 from itertools import groupby
 
 from rich.console import RenderableType
+from rich.emoji import Emoji
 from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical
 from textual.message import Message
@@ -88,6 +89,7 @@ def duration(seconds: int) -> str:
 class Playlist(Widget):
     tracks = reactive(list[Child]())
     track_index = reactive[int | None](None)
+    paused = reactive[bool](False)
 
     @property
     def next_track(self) -> Child | None:
@@ -122,13 +124,18 @@ class Playlist(Widget):
     def watch_track_index(self, new_track_index: int | None) -> None:
         self._fill_table(self.tracks, new_track_index)
 
+    def watch_paused(self, paused) -> None:
+        self._fill_table(self.tracks, self.track_index)
+
     def _fill_table(self, tracks: list[Child], track_index: int | None) -> None:
         table = self.query_one(DataTable)
         table.clear()
 
+        icon = Emoji("play_button") if not self.paused else Emoji("pause_button")
+
         for index, track in enumerate(tracks):
             table.add_row(
-                ">" if index == track_index else None,
+                icon if index == track_index else None,
                 track.track,
                 track.title,
                 duration(track.duration or 0),
@@ -151,12 +158,15 @@ class Playlist(Widget):
 class PlaybackProgress(Widget):
     track = reactive[Child | None](None)
     position = reactive[int](0)
+    paused = reactive[bool](False)
 
     def render(self) -> RenderableType:
         if self.track is None:
             return "Not playing"
 
-        return f"{duration(self.position)} / {duration(self.track.duration or 0)}"
+        status = "Playing" if not self.paused else "Paused"
+
+        return f"{status} {duration(self.position)} / {duration(self.track.duration or 0)}"
 
 
 class RorqualApp(App):
@@ -203,6 +213,7 @@ class RorqualApp(App):
     def on_mount(self) -> None:
         self.player.time_position_callbacks.register(self.on_time_pos_updated)
         self.player.next_track_start_callbacks.register(self.on_next_track_start)
+        self.player.pause_callbacks.register(self.on_pause)
 
     def on_album_tree_add_album_to_playlist(self, message: AlbumTree.AddAlbumToPlaylist) -> None:
         self.playlist.tracks = message.album.song
@@ -229,3 +240,7 @@ class RorqualApp(App):
         if next_track := self.playlist.next_track:
             self.player.set_next_track(next_track.id)
             self.playback_progress.track = next_track
+
+    def on_pause(self, paused: bool) -> None:
+        self.playlist.paused = paused
+        self.playback_progress.paused = paused

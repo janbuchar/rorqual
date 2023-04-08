@@ -40,6 +40,7 @@ class SubsonicPlayer:
 
         self.time_position_callbacks = CallbackList[float | None]()
         self.next_track_start_callbacks = CallbackList[[]]()
+        self.pause_callbacks = CallbackList[bool]()
 
         self._paused = False
         self._playing_track: str | None = None
@@ -79,6 +80,7 @@ class SubsonicPlayer:
                     self.time_position_callbacks(event.data.value)
                 if event.data.name == "pause":
                     self._paused = event.data.value
+                    self.pause_callbacks(self._paused)
                 if event.data.name == "filename":
                     self._playing_track = event.data.value
                 if event.data.name == "playlist-current-pos":
