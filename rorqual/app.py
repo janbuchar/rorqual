@@ -4,8 +4,9 @@ from rich.console import RenderableType
 from rich.emoji import Emoji
 from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical
+from textual.coordinate import Coordinate
 from textual.message import Message
-from textual.reactive import reactive
+from textual.reactive import reactive, var
 from textual.widget import Widget
 from textual.widgets import DataTable, Tree
 
@@ -90,6 +91,7 @@ class Playlist(Widget):
     tracks = reactive(list[Child]())
     track_index = reactive[int | None](None)
     playback_state = reactive[PlaybackState]("stopped")
+    highlighted_row = var[int](0)
 
     @property
     def current_track(self) -> Child | None:
@@ -158,11 +160,16 @@ class Playlist(Widget):
                 key=track.id,
             )
 
+        table.cursor_coordinate = Coordinate(min(len(self.tracks), self.highlighted_row), 0)
+
     def on_data_table_row_selected(self, message: DataTable.RowSelected) -> None:
         for track in self.tracks:
             if track.id == message.row_key.value:
                 self.post_message(self.TrackSelected(message.cursor_row, track))
                 return
+
+    def on_data_table_row_highlighted(self, message: DataTable.RowHighlighted) -> None:
+        self.highlighted_row = message.cursor_row
 
     def action_down(self) -> None:
         self.query_one(DataTable).action_cursor_down()
