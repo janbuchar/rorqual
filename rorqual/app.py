@@ -10,7 +10,7 @@ from textual.widget import Widget
 from textual.widgets import DataTable, Tree
 
 from rorqual.subsonic_client import SubsonicClient
-from rorqual.subsonic_player import SubsonicPlayer
+from rorqual.subsonic_player import PlaybackState, SubsonicPlayer
 from subsonic.subsonic_rest_api import AlbumId3, AlbumWithSongsId3, ArtistId3, Child
 
 
@@ -89,7 +89,14 @@ def duration(seconds: int) -> str:
 class Playlist(Widget):
     tracks = reactive(list[Child]())
     track_index = reactive[int | None](None)
-    paused = reactive[bool](False)
+    playback_state = reactive[PlaybackState]("stopped")
+
+    @property
+    def current_track(self) -> Child | None:
+        if self.track_index is None or self.track_index not in range(0, len(self.tracks)):
+            return None
+
+        return self.tracks[self.track_index]
 
     @property
     def next_track(self) -> Child | None:
@@ -101,6 +108,7 @@ class Playlist(Widget):
     BINDINGS = [
         ("j", "down", "Down"),
         ("k", "up", "Up"),
+        ("space", "toggle", "Play/Pause"),
     ]
 
     class TrackSelected(Message):
@@ -108,6 +116,9 @@ class Playlist(Widget):
             super().__init__()
             self.track_index = track_index
             self.track = track
+
+    class PlayPause(Message):
+        pass
 
     def compose(self) -> ComposeResult:
         table = DataTable()
@@ -119,23 +130,28 @@ class Playlist(Widget):
         yield table
 
     def watch_tracks(self, new_tracks: list[Child]) -> None:
-        self._fill_table(new_tracks, self.track_index)
+        self._fill_table()
 
     def watch_track_index(self, new_track_index: int | None) -> None:
-        self._fill_table(self.tracks, new_track_index)
+        self._fill_table()
 
-    def watch_paused(self, paused) -> None:
-        self._fill_table(self.tracks, self.track_index)
+    def watch_playback_state(self, new_state: PlaybackState) -> None:
+        self._fill_table()
 
-    def _fill_table(self, tracks: list[Child], track_index: int | None) -> None:
+    def _fill_table(self) -> None:
         table = self.query_one(DataTable)
         table.clear()
 
-        icon = Emoji("play_button") if not self.paused else Emoji("pause_button")
+        if self.playback_state == "playing":
+            icon = Emoji("play_button")
+        elif self.playback_state == "paused":
+            icon = Emoji("pause_button")
+        else:
+            icon = None
 
-        for index, track in enumerate(tracks):
+        for index, track in enumerate(self.tracks):
             table.add_row(
-                icon if index == track_index else None,
+                icon if index == self.track_index else None,
                 track.track,
                 track.title,
                 duration(track.duration or 0),
@@ -154,17 +170,20 @@ class Playlist(Widget):
     def action_up(self) -> None:
         self.query_one(DataTable).action_cursor_up()
 
+    def action_toggle(self) -> None:
+        self.post_message(self.PlayPause())
+
 
 class PlaybackProgress(Widget):
     track = reactive[Child | None](None)
     position = reactive[int](0)
-    paused = reactive[bool](False)
+    playback_state = reactive[PlaybackState]("stopped")
 
     def render(self) -> RenderableType:
-        if self.track is None:
+        if self.track is None or self.playback_state == "stopped":
             return "Not playing"
 
-        status = "Playing" if not self.paused else "Paused"
+        status = "Playing" if self.playback_state == "playing" else "Paused"
 
         return f"{status} {duration(self.position)} / {duration(self.track.duration or 0)}"
 
@@ -213,7 +232,7 @@ class RorqualApp(App):
     def on_mount(self) -> None:
         self.player.time_position_callbacks.register(self.on_time_pos_updated)
         self.player.next_track_start_callbacks.register(self.on_next_track_start)
-        self.player.pause_callbacks.register(self.on_pause)
+        self.player.playback_state_callbacks.register(self.on_playback_state_change)
 
     def on_album_tree_add_album_to_playlist(self, message: AlbumTree.AddAlbumToPlaylist) -> None:
         self.playlist.tracks = message.album.song
@@ -229,6 +248,9 @@ class RorqualApp(App):
         else:
             self.player.toggle_paused()
 
+    def on_playlist_play_pause(self) -> None:
+        self.player.toggle_paused()
+
     def on_time_pos_updated(self, time_pos: float | None) -> None:
         self.playback_progress.position = int(time_pos or 0.0)
 
@@ -237,10 +259,11 @@ class RorqualApp(App):
             raise RuntimeError("Inconsistent state")
 
         self.playlist.track_index += 1
+        self.playback_progress.track = self.playlist.current_track
+
         if next_track := self.playlist.next_track:
             self.player.set_next_track(next_track.id)
-            self.playback_progress.track = next_track
 
-    def on_pause(self, paused: bool) -> None:
-        self.playlist.paused = paused
-        self.playback_progress.paused = paused
+    def on_playback_state_change(self, state: PlaybackState) -> None:
+        self.playlist.playback_state = state
+        self.playback_progress.playback_state = state

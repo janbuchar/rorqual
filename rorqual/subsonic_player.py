@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Callable, Generic, ParamSpec
+from typing import Any, Callable, Generic, Literal, ParamSpec
 
 import httpx
 from mpv import MPV, MpvEvent, MpvEventID
@@ -23,6 +23,9 @@ class CallbackList(Generic[TArgs]):
             callback(*args, **kwargs)
 
 
+PlaybackState = Literal["stopped", "playing", "paused"]
+
+
 class SubsonicPlayer:
     PROTOCOL = "subsonic"
 
@@ -40,7 +43,7 @@ class SubsonicPlayer:
 
         self.time_position_callbacks = CallbackList[float | None]()
         self.next_track_start_callbacks = CallbackList[[]]()
-        self.pause_callbacks = CallbackList[bool]()
+        self.playback_state_callbacks = CallbackList[PlaybackState]()
 
         self._paused = False
         self._playing_track: str | None = None
@@ -61,6 +64,7 @@ class SubsonicPlayer:
 
     def play(self, id: str) -> None:
         self._mpv.loadfile(self._prefix_id(id), mode="replace")
+        self.playback_state_callbacks("playing")
 
     def set_next_track(self, id: str) -> None:
         self._mpv.playlist_clear()
@@ -76,16 +80,19 @@ class SubsonicPlayer:
     def handle_event(self, event: MpvEvent) -> None:
         match event.event_id.value:
             case MpvEventID.PROPERTY_CHANGE if event.data:
-                if event.data.name == "time-pos" and self.time_position_callbacks:
+                if event.data.name == "time-pos":
                     self.time_position_callbacks(event.data.value)
                 if event.data.name == "pause":
                     self._paused = event.data.value
-                    self.pause_callbacks(self._paused)
+                    self.playback_state_callbacks("paused" if self._paused else "playing")
                 if event.data.name == "filename":
                     self._playing_track = event.data.value
                 if event.data.name == "playlist-current-pos":
-                    if event.data.value == 1:
-                        self.next_track_start_callbacks()
+                    match event.data.value:
+                        case 1:
+                            self.next_track_start_callbacks()
+                        case -1:
+                            self.playback_state_callbacks("stopped")
 
     def dummy_property_handler(self, *args) -> None:
         pass
