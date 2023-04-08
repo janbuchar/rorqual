@@ -1,7 +1,6 @@
 import asyncio
 import os
 
-import httpx
 import typer
 from textual.features import FeatureFlag
 
@@ -21,8 +20,7 @@ def main(dev: bool = False):
     async def run_rorqual():
         config = Config.from_file()
 
-        async with httpx.AsyncClient(base_url=config.subsonic_url) as httpx_client:
-            subsonic = SubsonicClient(httpx_client, config)
+        async with SubsonicClient.create(config) as subsonic:
             player = SubsonicPlayer(subsonic, asyncio.get_running_loop())
             app = RorqualApp(subsonic, player)
             await app.run_async()

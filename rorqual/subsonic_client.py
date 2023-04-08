@@ -3,8 +3,11 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import secrets
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator, Generator, Self
 
 import httpx
+from more_itertools import flatten
 from xsdata.formats.dataclass.context import XmlContext
 from xsdata.formats.dataclass.parsers import XmlParser
 
@@ -12,65 +15,68 @@ from rorqual.config import Config
 from subsonic.subsonic_rest_api import AlbumId3, AlbumWithSongsId3, ArtistId3, SubsonicResponse
 
 
-class SubsonicClient:
-    common_params = httpx.QueryParams({"v": "1.16.1", "c": "rorqual"})
-
-    def __init__(self, client: httpx.AsyncClient, config: Config) -> None:
-        self.client = client
-        self.parser = XmlParser(context=XmlContext())
+class SubsonicAuth(httpx.Auth):
+    def __init__(self, config: Config) -> None:
+        super().__init__()
         self.config = config
 
-    def _auth_params(self) -> httpx.QueryParams:
+    def auth_flow(self, request: httpx.Request) -> Generator[httpx.Request, httpx.Response, None]:
         salt = secrets.token_urlsafe(12)
-
-        return httpx.QueryParams(
-            {
-                "u": self.config.subsonic_user,
-                "s": salt,
-                "t": hashlib.md5((self.config.subsonic_password + salt).encode()).hexdigest(),
-            }
+        request.url = request.url.copy_merge_params(
+            httpx.QueryParams(
+                {
+                    "u": self.config.subsonic_user,
+                    "s": salt,
+                    "t": hashlib.md5((self.config.subsonic_password + salt).encode()).hexdigest(),
+                    "v": "1.16.1",
+                    "c": "rorqual",
+                }
+            )
         )
+
+        yield request
+
+
+class SubsonicClient:
+    def __init__(self, client: httpx.AsyncClient, config: Config) -> None:
+        self.client = client
+        self.config = config
+        self.parser = XmlParser(context=XmlContext())
+
+    @classmethod
+    @asynccontextmanager
+    async def create(cls, config: Config) -> AsyncGenerator[Self, None]:
+        base_url = httpx.URL(config.subsonic_url)
+
+        async with httpx.AsyncClient(base_url=base_url, auth=SubsonicAuth(config)) as client:
+            yield cls(client, config)
+
+    async def request(self, method: str, path: str, **kwargs: str | int) -> SubsonicResponse:
+        params = httpx.QueryParams({k: str(v) for k, v in kwargs.items()}) if kwargs else None
+        response = await self.client.request(method, path, params=params)
+
+        return self.parser.from_string(response.text, SubsonicResponse)
 
     async def get_artists(self) -> list[ArtistId3]:
-        response = await self.client.get("/rest/getArtists", params=self._auth_params().merge(self.common_params))
-        index = self.parser.from_string(response.text, SubsonicResponse).artists
+        index = (await self.request("GET", "/rest/getArtists")).artists
         assert index is not None
 
-        result = list[ArtistId3]()
-
-        for item in index.index:
-            result.extend(item.artist)
-
-        return result
+        return list(flatten(item.artist for item in index.index))
 
     async def get_albums(self) -> list[AlbumId3]:
-        response = await self.client.get(
-            "/rest/getAlbumList2",
-            params=self._auth_params()
-            .merge(self.common_params)
-            .merge(httpx.QueryParams({"type": "alphabeticalByArtist", "size": 500})),
-        )
-        albums = self.parser.from_string(response.text, SubsonicResponse).album_list2
+        albums = (await self.request("GET", "/rest/getAlbumList2", type="alphabeticalByArtist", size=500)).album_list2
         assert albums is not None
 
         return albums.album
 
     async def get_album_details(self, album_id: str) -> AlbumWithSongsId3:
-        response = await self.client.get(
-            "/rest/getAlbum",
-            params=self._auth_params().merge(self.common_params).merge(httpx.QueryParams({"id": album_id})),
-        )
-        album = self.parser.from_string(response.text, SubsonicResponse).album
+        album = (await self.request("GET", "/rest/getAlbum", id=album_id)).album
         assert album is not None
 
         return album
 
     async def stream(self, song_id: str, buffer: Buffer) -> None:
-        async with self.client.stream(
-            "GET",
-            "/rest/stream",
-            params=self._auth_params().merge(self.common_params).merge(httpx.QueryParams({"id": song_id})),
-        ) as response:
+        async with self.client.stream("GET", "/rest/stream", params=httpx.QueryParams({"id": song_id})) as response:
             buffer.allocate(int(response.headers["content-length"]))
             try:
                 async for chunk in response.aiter_raw():

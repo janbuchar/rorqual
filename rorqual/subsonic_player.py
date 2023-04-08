@@ -33,6 +33,10 @@ class SubsonicPlayer:
         self.client = client
         self.loop = loop
 
+        self.time_position_callbacks = CallbackList[float | None]()
+        self.next_track_start_callbacks = CallbackList[[]]()
+        self.playback_state_callbacks = CallbackList[PlaybackState]()
+
         self._mpv = MPV()
         self._mpv.register_stream_protocol(self.PROTOCOL, self._open)
         self._mpv.register_event_callback(self.handle_event)
@@ -40,10 +44,6 @@ class SubsonicPlayer:
         self._mpv.observe_property("pause", self.dummy_property_handler)
         self._mpv.observe_property("filename", self.dummy_property_handler)
         self._mpv.observe_property("playlist-current-pos", self.dummy_property_handler)
-
-        self.time_position_callbacks = CallbackList[float | None]()
-        self.next_track_start_callbacks = CallbackList[[]]()
-        self.playback_state_callbacks = CallbackList[PlaybackState]()
 
         self._paused = False
         self._playing_track: str | None = None
