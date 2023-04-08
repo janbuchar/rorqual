@@ -87,6 +87,14 @@ def duration(seconds: int) -> str:
 
 class Playlist(Widget):
     tracks = reactive(list[Child]())
+    track_index = reactive[int | None](None)
+
+    @property
+    def next_track(self) -> Child | None:
+        if self.track_index is None or self.track_index + 1 >= len(self.tracks):
+            return None
+
+        return self.tracks[self.track_index + 1]
 
     BINDINGS = [
         ("j", "down", "Down"),
@@ -94,30 +102,43 @@ class Playlist(Widget):
     ]
 
     class TrackSelected(Message):
-        def __init__(self, track: Child) -> None:
+        def __init__(self, track_index: int, track: Child) -> None:
             super().__init__()
+            self.track_index = track_index
             self.track = track
 
     def compose(self) -> ComposeResult:
         table = DataTable()
         table.cursor_type = "row"
+        table.add_column("", width=1)
         table.add_column("#", width=3)
         table.add_column("Title")
         table.add_column("Time", width=5)
         yield table
 
     def watch_tracks(self, new_tracks: list[Child]) -> None:
+        self._fill_table(new_tracks, self.track_index)
+
+    def watch_track_index(self, new_track_index: int | None) -> None:
+        self._fill_table(self.tracks, new_track_index)
+
+    def _fill_table(self, tracks: list[Child], track_index: int | None) -> None:
         table = self.query_one(DataTable)
-        assert table is not None
         table.clear()
 
-        for track in new_tracks:
-            table.add_row(track.track, track.title, duration(track.duration or 0), key=track.id)
+        for index, track in enumerate(tracks):
+            table.add_row(
+                ">" if index == track_index else None,
+                track.track,
+                track.title,
+                duration(track.duration or 0),
+                key=track.id,
+            )
 
     def on_data_table_row_selected(self, message: DataTable.RowSelected) -> None:
         for track in self.tracks:
             if track.id == message.row_key.value:
-                self.post_message(self.TrackSelected(track))
+                self.post_message(self.TrackSelected(message.cursor_row, track))
                 return
 
     def action_down(self) -> None:
@@ -171,22 +192,40 @@ class RorqualApp(App):
             yield Playlist()
             yield PlaybackProgress()
 
+    @property
+    def playlist(self) -> Playlist:
+        return self.query_one(Playlist)
+
+    @property
+    def playback_progress(self) -> PlaybackProgress:
+        return self.query_one(PlaybackProgress)
+
     def on_mount(self) -> None:
-        self.player.register_time_position_callback(self.on_time_pos_updated)
+        self.player.time_position_callbacks.register(self.on_time_pos_updated)
+        self.player.next_track_start_callbacks.register(self.on_next_track_start)
 
     def on_album_tree_add_album_to_playlist(self, message: AlbumTree.AddAlbumToPlaylist) -> None:
-        playlist = self.query_one(Playlist)
-        playlist.tracks = message.album.song
+        self.playlist.tracks = message.album.song
 
     def on_playlist_track_selected(self, message: Playlist.TrackSelected) -> None:
-        playback_progress = self.query_one(PlaybackProgress)
-        playback_progress.track = message.track
+        self.playback_progress.track = message.track
+        self.playlist.track_index = message.track_index
 
         if message.track.id != self.player.playing_track:
             self.player.play(message.track.id)
+            if next_track := self.playlist.next_track:
+                self.player.set_next_track(next_track.id)
         else:
             self.player.toggle_paused()
 
     def on_time_pos_updated(self, time_pos: float | None) -> None:
-        playback_progress = self.query_one(PlaybackProgress)
-        playback_progress.position = int(time_pos or 0.0)
+        self.playback_progress.position = int(time_pos or 0.0)
+
+    def on_next_track_start(self) -> None:
+        if self.playlist.track_index is None:
+            raise RuntimeError("Inconsistent state")
+
+        self.playlist.track_index += 1
+        if next_track := self.playlist.next_track:
+            self.player.set_next_track(next_track.id)
+            self.playback_progress.track = next_track
