@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Literal
+from typing import Literal, cast
 
 import httpx
 from mpv import MPV, MpvEvent, MpvEventID
+
+from subsonic.subsonic_rest_api import Child
 
 from .callbacks import CallbackList
 from .stream_manager import Buffer, StreamManager
@@ -20,8 +22,12 @@ class SubsonicPlayer:
         self._loop = loop
 
         self.time_position_callbacks = CallbackList[float | None]()
-        self.next_track_start_callbacks = CallbackList[[]]()
+        self.playlist_position_callbacks = CallbackList[int | None]()
         self.playback_state_callbacks = CallbackList[PlaybackState]()
+        self.playlist_content_callbacks = CallbackList[list[Child]]()
+
+        self._playlist = list[Child]()
+        self._playlist_position: int | None = None
 
         self._mpv = MPV()
         self._mpv.register_stream_protocol(self.PROTOCOL, self._open)
@@ -39,22 +45,63 @@ class SubsonicPlayer:
 
         return SubsonicStreamFrontend(self._streams.fetch(parsed_url.host), self._loop)
 
-    def _prefix_id(self, id: str) -> str:
-        return f"{self.PROTOCOL}://{id}"
+    def _url(self, track: Child) -> str:
+        return f"{self.PROTOCOL}://{track.id}"
 
-    def play(self, id: str) -> None:
-        self._mpv.loadfile(self._prefix_id(id), mode="replace")
+    def playlist_clear(self) -> None:
+        self.stop()
+        self._streams.abort_prefetching()
+        self._playlist = []
+        self._playlist_position = None
+        self.playlist_content_callbacks(self._playlist)
+
+    def playlist_append(self, tracks: list[Child]) -> None:
+        self._playlist += tracks
+        self.playlist_content_callbacks(self._playlist)
+
+    @property
+    def current_track(self) -> Child | None:
+        if self._playlist_position is None:
+            return None
+
+        return self._playlist[self._playlist_position]
+
+    @property
+    def next_track(self) -> Child | None:
+        if self._playlist_position is None or self._playlist_position + 1 not in range(0, len(self._playlist)):
+            return None
+
+        return self._playlist[self._playlist_position + 1]
+
+    def play(self, playlist_position: int) -> None:
+        self._playlist_position = playlist_position
+        self._mpv.loadfile(self._url(cast(Child, self.current_track)), mode="replace")
+
         self.playback_state_callbacks("playing")
+        self.playlist_position_callbacks(self._playlist_position)
 
-    def set_next_track(self, id: str) -> None:
-        self._mpv.playlist_clear()
-        self._mpv.playlist_append(self._prefix_id(id))
+        if self.next_track is not None:
+            self._mpv.playlist_append(self._url(self.next_track))
 
     def toggle_paused(self) -> None:
-        self._mpv.pause = not self._mpv.pause
+        new_state = not self._mpv.pause
+        self._mpv.pause = new_state
+        self.playback_state_callbacks("paused" if new_state else "playing")
 
     def stop(self) -> None:
         self._mpv.stop(keep_playlist=False)
+        self.playback_state_callbacks("stopped")
+
+    def _playlist_advance(self) -> None:
+        if self._playlist_position is not None:
+            self._playlist_position += 1
+        else:
+            self._playlist_position = 0
+
+        self._mpv.playlist_clear()
+
+        if self.next_track is not None:
+            self._mpv.playlist_append(self._url(self.next_track))
 
     def handle_event(self, event: MpvEvent) -> None:
         match event.event_id.value:
@@ -66,9 +113,11 @@ class SubsonicPlayer:
                 if event.data.name == "playlist-current-pos":
                     match event.data.value:
                         case 1:
-                            self.next_track_start_callbacks()
+                            self._playlist_advance()
                         case -1:
                             self.playback_state_callbacks("stopped")
+                            self._playlist_position = None
+                    self.playlist_position_callbacks(self._playlist_position)
 
     def dummy_property_handler(self, *args) -> None:
         pass

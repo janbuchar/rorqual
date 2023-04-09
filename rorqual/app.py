@@ -103,20 +103,6 @@ class Playlist(Widget):
         self._stream_manager = stream_manager
         self._fetching_state = dict[str, FetchingState]()
 
-    @property
-    def current_track(self) -> Child | None:
-        if self.track_index is None or self.track_index not in range(0, len(self.tracks)):
-            return None
-
-        return self.tracks[self.track_index]
-
-    @property
-    def next_track(self) -> Child | None:
-        if self.track_index is None or self.track_index + 1 >= len(self.tracks):
-            return None
-
-        return self.tracks[self.track_index + 1]
-
     muted_text = Style(color=Color(name="muted", type=ColorType.STANDARD, number=8))
 
     BINDINGS = [
@@ -266,22 +252,25 @@ class RorqualApp(App):
 
     def on_mount(self) -> None:
         self.player.time_position_callbacks.register(self.on_time_pos_updated)
-        self.player.next_track_start_callbacks.register(self.on_next_track_start)
+        self.player.playlist_content_callbacks.register(self.on_playlist_content_change)
         self.player.playback_state_callbacks.register(self.on_playback_state_change)
+        self.player.playlist_position_callbacks.register(self.on_playlist_track_changed)
 
     def on_album_tree_add_album_to_playlist(self, message: AlbumTree.AddAlbumToPlaylist) -> None:
-        self.player.stop()
-        self.stream_manager.abort_prefetching()
-        self.playlist.tracks = message.album.song
+        self.player.playlist_append(message.album.song)
+
+    def on_playlist_content_change(self, playlist: list[Child]) -> None:
+        self.playlist.tracks = playlist
+
+    def on_playlist_track_changed(self, track_index: int | None) -> None:
+        self.playlist.track_index = track_index
+
+        if track_index is not None:
+            self.playback_progress.track = self.playlist.tracks[track_index]
 
     def on_playlist_track_selected(self, message: Playlist.TrackSelected) -> None:
         if message.track_index != self.playlist.track_index:
-            self.playback_progress.track = message.track
-            self.playlist.track_index = message.track_index
-
-            self.player.play(message.track.id)
-            if next_track := self.playlist.next_track:
-                self.player.set_next_track(next_track.id)
+            self.player.play(message.track_index)
         else:
             self.player.toggle_paused()
 
@@ -290,16 +279,6 @@ class RorqualApp(App):
 
     def on_time_pos_updated(self, time_pos: float | None) -> None:
         self.playback_progress.position = int(time_pos or 0.0)
-
-    def on_next_track_start(self) -> None:
-        if self.playlist.track_index is None:
-            raise RuntimeError("Inconsistent state")
-
-        self.playlist.track_index += 1
-        self.playback_progress.track = self.playlist.current_track
-
-        if next_track := self.playlist.next_track:
-            self.player.set_next_track(next_track.id)
 
     def on_playback_state_change(self, state: PlaybackState) -> None:
         self.playlist.playback_state = state
