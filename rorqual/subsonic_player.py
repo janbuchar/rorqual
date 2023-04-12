@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Literal, cast
+from typing import Literal, Sequence, cast
 
 import httpx
 from mpv import MPV, MpvEvent, MpvEventID
@@ -48,6 +48,10 @@ class SubsonicPlayer:
     def _url(self, track: Child) -> str:
         return f"{self.PROTOCOL}://{track.id}"
 
+    @property
+    def playlist(self) -> Sequence[Child]:
+        return self._playlist
+
     def playlist_clear(self) -> None:
         self.stop()
         self._streams.abort_prefetching()
@@ -73,6 +77,26 @@ class SubsonicPlayer:
 
         return self._playlist[self._playlist_position + 1]
 
+    @property
+    def previous_track(self) -> Child | None:
+        if self._playlist_position is None or self._playlist_position - 1 not in range(0, len(self._playlist)):
+            return None
+
+        return self._playlist[self._playlist_position - 1]
+
+    @property
+    def playlist_position(self) -> int | None:
+        return self._playlist_position
+
+    @property
+    def playback_state(self) -> PlaybackState:
+        if self.playlist_position is None:
+            return "stopped"
+        if self._mpv.pause:
+            return "paused"
+
+        return "playing"
+
     def play(self, playlist_position: int) -> None:
         self._playlist_position = playlist_position
         self._mpv.loadfile(self._url(cast(Child, self.current_track)), mode="replace")
@@ -83,7 +107,18 @@ class SubsonicPlayer:
         if self.next_track is not None:
             self._mpv.playlist_append(self._url(self.next_track))
 
+    def play_next(self) -> None:
+        if self.next_track is not None and self._playlist_position is not None:
+            self.play(self._playlist_position + 1)
+
+    def play_previous(self) -> None:
+        if self.previous_track is not None and self._playlist_position is not None:
+            self.play(self._playlist_position - 1)
+
     def toggle_paused(self) -> None:
+        if self.playback_state == "stopped":
+            return
+
         new_state = not self._mpv.pause
         self._mpv.pause = new_state
         self.playback_state_callbacks("paused" if new_state else "playing")

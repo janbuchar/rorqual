@@ -4,7 +4,7 @@ import asyncio
 import hashlib
 import secrets
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Generator, Self
+from typing import AsyncGenerator, BinaryIO, Generator, Self
 
 import httpx
 from more_itertools import flatten
@@ -74,6 +74,13 @@ class SubsonicClient:
         assert album is not None
 
         return album
+
+    async def download_cover(self, cover_id: str, destination: BinaryIO) -> None:
+        async with self.client.stream(
+            "GET", "/rest/getCoverArt", params=httpx.QueryParams({"id": cover_id})
+        ) as response:
+            async for chunk in response.aiter_raw():
+                destination.write(chunk)
 
     async def stream(self, song_id: str, buffer: Buffer) -> None:
         async with self.client.stream("GET", "/rest/stream", params=httpx.QueryParams({"id": song_id})) as response:
