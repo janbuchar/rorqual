@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime, timedelta
 from typing import cast
 
 from mpris_server.adapters import DbusObj, Microseconds, MprisAdapter, Track, ValidMetadata
@@ -154,10 +155,16 @@ class RorqualEventAdapter(EventAdapter):
 
         self.cover_manager = cover_manager
         self.cover_manager.cover_fetched_callbacks.register(self.notify)
+        self.last_position_change_emission = datetime.utcnow()
 
     def time_position_callback(self, time_position: float | None):
+        now = datetime.utcnow()
+        if self.last_position_change_emission and now - self.last_position_change_emission < timedelta(seconds=0.5):
+            return
+
         self.player.Seeked.emit((time_position or 0) * 10**6)
         self.emit_player_changes(["Position"])
+        self.last_position_change_emission = now
 
     def notify(self, *args, **kwargs) -> None:
         self.on_player_all()
