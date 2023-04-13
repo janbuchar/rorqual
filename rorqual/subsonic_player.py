@@ -54,13 +54,14 @@ class SubsonicPlayer:
 
     def playlist_clear(self) -> None:
         self.stop()
+        self._mpv.playlist_clear()
         self._streams.abort_prefetching()
         self._playlist = []
         self._playlist_position = None
         self.playlist_content_callbacks(self._playlist)
 
     def playlist_append(self, tracks: list[Child]) -> None:
-        self._playlist += tracks
+        self._playlist = self._playlist + tracks
         self.playlist_content_callbacks(self._playlist)
 
     @property
