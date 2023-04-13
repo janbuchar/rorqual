@@ -109,6 +109,7 @@ class Playlist(Widget):
         ("j", "down", "Down"),
         ("k", "up", "Up"),
         ("space", "toggle", "Play/Pause"),
+        ("c", "clear", "Clear playlist"),
     ]
 
     class TrackSelected(Message):
@@ -118,6 +119,9 @@ class Playlist(Widget):
             self.track = track
 
     class PlayPause(Message):
+        pass
+
+    class ClearPlaylist(Message):
         pass
 
     def compose(self) -> ComposeResult:
@@ -192,6 +196,9 @@ class Playlist(Widget):
 
     def action_toggle(self) -> None:
         self.post_message(self.PlayPause())
+
+    def action_clear(self) -> None:
+        self.post_message(self.ClearPlaylist())
 
 
 class PlaybackProgress(Widget):
@@ -283,3 +290,6 @@ class RorqualApp(App):
     def on_playback_state_change(self, state: PlaybackState) -> None:
         self.playlist.playback_state = state
         self.playback_progress.playback_state = state
+
+    def on_playlist_clear_playlist(self) -> None:
+        self.player.playlist_clear()
