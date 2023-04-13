@@ -23,7 +23,7 @@ def main(dev: bool = False):
     os.environ["TEXTUAL"] = ",".join(sorted(features))
 
     async def run_rorqual():
-        config = Config.from_file()
+        config = await Config.from_file()
 
         async with SubsonicClient.create(config) as subsonic:
             stream_manager = StreamManager(subsonic, config)
