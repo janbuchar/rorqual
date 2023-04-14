@@ -6,13 +6,13 @@ import typer
 from mpris_server.server import Server
 from textual.features import FeatureFlag
 
-from rorqual.app import RorqualApp
-from rorqual.config import Config
-from rorqual.cover_manager import CoverManager
-from rorqual.mpris import RorqualEventAdapter, RorqualMprisAdapter
-from rorqual.stream_manager import StreamManager
-from rorqual.subsonic_client import SubsonicClient
-from rorqual.subsonic_player import SubsonicPlayer
+from .app import RorqualApp
+from .config import Config
+from .cover_manager import CoverManager
+from .mpris import RorqualEventAdapter, RorqualMprisAdapter
+from .stream_manager import StreamManager
+from .subsonic_client import SubsonicClient
+from .subsonic_player import SubsonicPlayer
 
 
 def main(dev: bool = False):

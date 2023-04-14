@@ -11,8 +11,9 @@ from more_itertools import flatten
 from xsdata.formats.dataclass.context import XmlContext
 from xsdata.formats.dataclass.parsers import XmlParser
 
-from rorqual.config import Config
 from subsonic.subsonic_rest_api import AlbumId3, AlbumWithSongsId3, ArtistId3, SubsonicResponse
+
+from .config import Config
 
 
 class SubsonicAuth(httpx.Auth):

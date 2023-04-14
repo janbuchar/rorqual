@@ -1,10 +1,11 @@
 from pathlib import Path
 
-from appdirs import user_cache_dir
+from platformdirs import user_cache_dir
 
-from rorqual.callbacks import CallbackList
-from rorqual.subsonic_client import SubsonicClient
 from subsonic.subsonic_rest_api import AlbumId3, Child
+
+from .callbacks import CallbackList
+from .subsonic_client import SubsonicClient
 
 
 class CoverManager:

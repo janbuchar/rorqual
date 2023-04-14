@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import tomli
-from appdirs import user_config_dir
+from platformdirs import user_config_dir
 
 
 @dataclass

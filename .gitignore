@@ -3,3 +3,4 @@ Session.vim
 .nvimrc
 .direnv
 __pycache__
+dist
