@@ -26,6 +26,7 @@ tomli = "^2.0.1"
 typer = "^0.7.0"
 rich = "^13.3.4"
 xsdata = "^22.12"
+setproctitle = "^1.3.2"
 
 [tool.poetry.group.dev.dependencies]
 textual = { version = "^0.19.1", extras = [ "dev" ] }

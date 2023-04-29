@@ -29,7 +29,7 @@ class SubsonicPlayer:
         self._playlist = list[Child]()
         self._playlist_position: int | None = None
 
-        self._mpv = MPV()
+        self._mpv = MPV(audio_client_name="rorqual", title="${?media-title:${media-title}}${!media-title:No file}")
         self._mpv.register_stream_protocol(self.PROTOCOL, self._open)
         self._mpv.register_event_callback(self.handle_event)
         self._mpv.observe_property("time-pos", self.dummy_property_handler)

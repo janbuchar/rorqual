@@ -4,6 +4,7 @@ from threading import Thread
 
 import typer
 from mpris_server.server import Server
+from setproctitle import setproctitle
 from textual.features import FeatureFlag
 
 from .app import RorqualApp
@@ -21,6 +22,8 @@ def main(dev: bool = False):
         features = features.union({"debug", "devtools"})
 
     os.environ["TEXTUAL"] = ",".join(sorted(features))
+
+    setproctitle("rorqual")
 
     async def run_rorqual():
         config = await Config.from_file()
