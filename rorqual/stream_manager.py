@@ -5,7 +5,7 @@ from weakref import WeakValueDictionary
 
 from .caching import BlobCache
 from .callbacks import CallbackList
-from .config import Config
+from .config import PrefetchingConfig
 from .subsonic_client import Buffer, SubsonicClient
 
 FetchingState = Literal["pending", "fetching", "done"]
@@ -13,7 +13,7 @@ StreamId: TypeAlias = str
 
 
 class StreamManager:
-    def __init__(self, subsonic: SubsonicClient, config: Config) -> None:
+    def __init__(self, subsonic: SubsonicClient, config: PrefetchingConfig) -> None:
         self.fetching_state_callbacks = CallbackList[StreamId, FetchingState]()
 
         self._config = config
@@ -57,7 +57,7 @@ class StreamManager:
         if not keep_active:
             self._task_streams.clear()
 
-        for _ in range(self._config.prefetch_worker_count - len(self._tasks)):
+        for _ in range(self._config.worker_count - len(self._tasks)):
             self._tasks.append(asyncio.create_task(self._worker()))
 
     async def prefetch(self, ids: Iterable[StreamId]) -> None:

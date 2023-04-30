@@ -28,8 +28,8 @@ def main(dev: bool = False):
     async def run_rorqual():
         config = await Config.from_file()
 
-        async with SubsonicClient.create(config) as subsonic:
-            stream_manager = StreamManager(subsonic, config)
+        async with SubsonicClient.create(config.subsonic) as subsonic:
+            stream_manager = StreamManager(subsonic, config.prefetching)
             cover_manager = CoverManager(subsonic)
             player = SubsonicPlayer(stream_manager, asyncio.get_running_loop())
 

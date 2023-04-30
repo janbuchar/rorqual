@@ -13,11 +13,11 @@ from xsdata.formats.dataclass.parsers import XmlParser
 
 from subsonic.subsonic_rest_api import AlbumId3, AlbumWithSongsId3, ArtistId3, SubsonicResponse
 
-from .config import Config
+from .config import SubsonicConfig
 
 
 class SubsonicAuth(httpx.Auth):
-    def __init__(self, config: Config) -> None:
+    def __init__(self, config: SubsonicConfig) -> None:
         super().__init__()
         self.config = config
 
@@ -26,9 +26,9 @@ class SubsonicAuth(httpx.Auth):
         request.url = request.url.copy_merge_params(
             httpx.QueryParams(
                 {
-                    "u": self.config.subsonic_user,
+                    "u": self.config.user,
                     "s": salt,
-                    "t": hashlib.md5((self.config.subsonic_password + salt).encode()).hexdigest(),
+                    "t": hashlib.md5((self.config.password + salt).encode()).hexdigest(),
                     "v": "1.16.1",
                     "c": "rorqual",
                 }
@@ -39,15 +39,15 @@ class SubsonicAuth(httpx.Auth):
 
 
 class SubsonicClient:
-    def __init__(self, client: httpx.AsyncClient, config: Config) -> None:
+    def __init__(self, client: httpx.AsyncClient, config: SubsonicConfig) -> None:
         self.client = client
         self.config = config
         self.parser = XmlParser(context=XmlContext())
 
     @classmethod
     @asynccontextmanager
-    async def create(cls, config: Config) -> AsyncGenerator[Self, None]:
-        base_url = httpx.URL(config.subsonic_url)
+    async def create(cls, config: SubsonicConfig) -> AsyncGenerator[Self, None]:
+        base_url = httpx.URL(config.url)
 
         async with httpx.AsyncClient(base_url=base_url, auth=SubsonicAuth(config)) as client:
             yield cls(client, config)
