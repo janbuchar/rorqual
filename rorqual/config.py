@@ -45,7 +45,7 @@ class Config(BaseModel):
         return Config.parse_obj(
             parsed.dict()
             | {
-                "subsonic": parsed.subsonic.evaluate()
+                "subsonic": await parsed.subsonic.evaluate()
                 if isinstance(parsed.subsonic, PasswordCommandSubsonicConfig)
                 else parsed.subsonic
             }
