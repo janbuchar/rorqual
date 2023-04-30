@@ -7,6 +7,9 @@ use_parentheses = true
 multi_line_output = 3
 include_trailing_comma = true
 
+[tool.pyright]
+pythonVersion = "3.11"
+
 [tool.poetry]
 name = "rorqual"
 version = "0.0.1"

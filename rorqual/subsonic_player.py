@@ -43,7 +43,9 @@ class SubsonicPlayer:
         if parsed_url.scheme != self.PROTOCOL:
             raise ValueError("Unsupported protocol")
 
-        return SubsonicStreamFrontend(self._streams.fetch(parsed_url.host), self._loop)
+        return SubsonicStreamFrontend(
+            asyncio.run_coroutine_threadsafe(self._streams.fetch(parsed_url.host), self._loop).result(), self._loop
+        )
 
     def _url(self, track: Child) -> str:
         return f"{self.PROTOCOL}://{track.id}"
@@ -55,7 +57,6 @@ class SubsonicPlayer:
     def playlist_clear(self) -> None:
         self.stop()
         self._mpv.playlist_clear()
-        self._streams.abort_prefetching()
         self._playlist = []
         self._playlist_position = None
         self.playlist_content_callbacks(self._playlist)
@@ -167,6 +168,12 @@ class SubsonicStreamFrontend:
     def __init__(self, buffer: Buffer, loop: asyncio.AbstractEventLoop) -> None:
         self.buffer = buffer
         self.loop = loop
+
+    @property
+    def size(self) -> int | None:
+        if not self.buffer.started.is_set():
+            return None
+        return len(self.buffer.data)
 
     def read(self, size: int) -> bytes:
         return asyncio.run_coroutine_threadsafe(self.buffer.read(size), self.loop).result()

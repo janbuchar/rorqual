@@ -12,6 +12,7 @@ class Config:
     subsonic_user: str
     subsonic_password: str
     prefetch_worker_count: int
+    audio_cache_size: int
 
     @classmethod
     async def from_file(cls) -> "Config":
@@ -34,4 +35,5 @@ class Config:
             subsonic_user=config["subsonic"]["user"],
             subsonic_password=subsonic_password,
             prefetch_worker_count=config.get("prefetching", {}).get("worker_count", 3),
+            audio_cache_size=config.get("prefetching", {}).get("cache_size", 256 * 2**20),
         )

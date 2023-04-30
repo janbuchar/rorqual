@@ -2,6 +2,7 @@ from functools import cached_property
 from itertools import accumulate, groupby, pairwise
 from typing import cast
 
+from more_itertools import interleave_longest
 from rich.color import Color, ColorType
 from rich.emoji import Emoji
 from rich.segment import Segment
@@ -171,9 +172,8 @@ class Playlist(ScrollView, can_focus=True):
     def on_mount(self) -> None:
         self._stream_manager.fetching_state_callbacks.register(self.on_fetch_state_change)
 
-    def watch_tracks(self, new_tracks: list[Child]) -> None:
-        for track in new_tracks:
-            self._stream_manager.fetch(track.id)
+    async def watch_tracks(self, new_tracks: list[Child]) -> None:
+        await self._stream_manager.prefetch(track.id for track in new_tracks)
 
     def compute__playlist_rows(self) -> PlaylistRows:
         result = PlaylistRows()
@@ -206,8 +206,15 @@ class Playlist(ScrollView, can_focus=True):
     def action_toggle(self) -> None:
         self.post_message(self.PlayPause())
 
-    def action_play(self) -> None:
+    async def action_play(self) -> None:
+        await self._stream_manager.prefetch(
+            interleave_longest(
+                (it.id for it in self.tracks[self._highlighted_row :]),
+                (it.id for it in reversed(self.tracks[: self._highlighted_row])),
+            )
+        )
         self.post_message(self.TrackSelected(self._highlighted_row, self.tracks[self._highlighted_row]))
 
     def action_clear(self) -> None:
+        self._stream_manager.abort_all_streams()
         self.post_message(self.ClearPlaylist())
