@@ -3,7 +3,6 @@ from itertools import accumulate, groupby, pairwise
 from typing import cast
 
 from more_itertools import interleave_longest
-from rich.color import Color, ColorType
 from rich.emoji import Emoji
 from rich.segment import Segment
 from rich.style import Style
@@ -43,14 +42,6 @@ class Playlist(ScrollView, can_focus=True):
     _highlighted_row = reactive[int](0)
     _playlist_rows = reactive[PlaylistRows](PlaylistRows())
 
-    muted_text = Style(color=Color(name="muted", type=ColorType.STANDARD, number=8))
-    active_row = Style(
-        bgcolor=Color(name="active", type=ColorType.STANDARD, number=4),
-        color=Color(name="foreground", type=ColorType.STANDARD, number=0),
-        bold=True,
-    )
-    highlighted_background = Style(bgcolor=Color(name="highlighted", type=ColorType.STANDARD, number=0))
-
     def __init__(self, stream_manager: StreamManager):
         super().__init__()
 
@@ -66,6 +57,45 @@ class Playlist(ScrollView, can_focus=True):
         ("enter", "play", "Play"),
         ("c", "clear", "Clear playlist"),
     ]
+
+    COMPONENT_CLASSES = {
+        "album-strip",
+        "track-strip",
+        "active-row",
+        "highlighted-row",
+        "fetch-status-icon",
+        "fetch-status-icon-highlighted",
+    }
+
+    DEFAULT_CSS = """
+    Playlist .album-strip {
+        background: $panel;
+        text-style: bold;
+    }
+
+    Playlist .track-strip {
+        background: $surface;
+    }
+
+    Playlist .active-row {
+        background: $secondary;
+        text-style: bold;
+        color: $text;
+    }
+
+    Playlist .fetch-status-icon {
+        color: $primary-background-lighten-1;
+    }
+
+    Playlist .fetch-status-icon-highlighted {
+        background: $primary-background;
+        color: $primary-background-lighten-3;
+    }
+
+    Playlist .highlighted-row {
+        background: $primary-background;
+    }
+    """
 
     class TrackSelected(Message):
         def __init__(self, track_index: int, track: Child) -> None:
@@ -104,7 +134,7 @@ class Playlist(ScrollView, can_focus=True):
 
     def album_strip(self, album: AlbumId3, tracks: list[Child]) -> Strip:
         album_duration = sum(track.duration or 0 for track in tracks)
-        style = Style(bgcolor=Color(name="background", type=ColorType.STANDARD, number=8), bold=True)
+        style = self.get_component_styles("album-strip").rich_style
 
         max_width = self.size.width if self._playlist_rows.total_size < self.size.height else self.size.width - 2
         segments = [f"[{album.year}]", f"{album.artist} - {album.name}", duration(album_duration)]
@@ -125,12 +155,13 @@ class Playlist(ScrollView, can_focus=True):
     def track_strip(self, track: Child, track_index: int) -> Strip:
         strip_style = Style()
         icon_style = Style()
+        is_highlighted = track_index == self._highlighted_row
 
-        if track_index == self._highlighted_row:
-            strip_style = self.highlighted_background
+        if is_highlighted:
+            strip_style = self.get_component_styles("highlighted-row").rich_style
 
         if track_index == self.track_index:
-            strip_style = self.active_row
+            strip_style = self.get_component_styles("active-row").rich_style
 
             if self.playback_state == "playing":
                 icon = Emoji("play_button")
@@ -140,7 +171,9 @@ class Playlist(ScrollView, can_focus=True):
                 icon = ""
         else:
             fetch_state = self._fetching_state.get(track.id, "pending")
-            icon_style = self.muted_text
+            icon_style = self.get_component_styles(
+                "fetch-status-icon" if not is_highlighted else "fetch-status-icon-highlighted"
+            ).rich_style
 
             if fetch_state == "pending":
                 icon = Emoji("stopwatch")
