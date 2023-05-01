@@ -26,6 +26,26 @@ class AlbumTree(Widget):
         ("a", "add_to_playlist", "Add to playlist"),
     ]
 
+    DEFAULT_CSS = """
+    AlbumTree Tree {
+        background: $background;
+    }
+
+    AlbumTree Tree > .tree--guides {
+        color: $surface;
+    }
+
+    AlbumTree Tree > .tree--guides-hover {
+        color: $warning;
+        text-style: bold;
+    }
+
+    AlbumTree Tree > .tree--guides-selected {
+        color: $warning;
+        text-style: bold;
+    }
+    """
+
     def __init__(self, subsonic: SubsonicClient) -> None:
         super().__init__()
         self.subsonic = subsonic

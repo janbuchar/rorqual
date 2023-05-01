@@ -2,10 +2,13 @@ import asyncio
 import os
 from threading import Thread
 
+import textual.app
 import typer
 from mpris_server.server import Server
 from setproctitle import setproctitle
 from textual.features import FeatureFlag
+
+from rorqual.ui.themes import THEMES
 
 from .app import RorqualApp
 from .config import Config
@@ -27,6 +30,7 @@ def main(dev: bool = False):
 
     async def run_rorqual():
         config = await Config.from_file()
+        textual.app.DEFAULT_COLORS = THEMES["nord"]
 
         async with SubsonicClient.create(config.subsonic) as subsonic:
             stream_manager = StreamManager(subsonic, config.prefetching)

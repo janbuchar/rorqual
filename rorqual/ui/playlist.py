@@ -60,7 +60,6 @@ class Playlist(ScrollView, can_focus=True):
 
     COMPONENT_CLASSES = {
         "album-strip",
-        "track-strip",
         "active-row",
         "highlighted-row",
         "fetch-status-icon",
@@ -68,13 +67,13 @@ class Playlist(ScrollView, can_focus=True):
     }
 
     DEFAULT_CSS = """
+    Playlist {
+        background: $background;
+    }
+
     Playlist .album-strip {
         background: $panel;
         text-style: bold;
-    }
-
-    Playlist .track-strip {
-        background: $surface;
     }
 
     Playlist .active-row {
@@ -84,16 +83,16 @@ class Playlist(ScrollView, can_focus=True):
     }
 
     Playlist .fetch-status-icon {
-        color: $primary-background-lighten-1;
+        color: $text-muted;
     }
 
     Playlist .fetch-status-icon-highlighted {
-        background: $primary-background;
-        color: $primary-background-lighten-3;
+        background: $surface;
+        color: $text-muted;
     }
 
     Playlist .highlighted-row {
-        background: $primary-background;
+        background: $surface;
     }
     """
 
