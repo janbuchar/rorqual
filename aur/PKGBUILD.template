@@ -1,0 +1,41 @@
+pkgname=rorqual-venv
+_pkgname=rorqual
+pkgver=${RELEASE_NUMBER}
+pkgrel=1
+pkgdesc="A TUI Subsonic client"
+arch=(any)
+url="https://github.com/janbuchar/rorqual"
+makedepends=(git python-pip)
+depends=(python mpv)
+options=(!strip)
+
+source=("$_pkgname-$pkgver.tar.gz::${TARBALL_URL}"
+	"requirements.txt"
+	"rorqual")
+
+sha256sums=("${TARBALL_HASH}"
+            "${REQUIREMENTS_HASH}"
+            "${LAUNCHER_HASH}")
+
+package() {
+	# Create virtualenv
+	export PIP_DISABLE_PIP_VERSION_CHECK=1
+	export PYTHONDONTWRITEBYTECODE=1
+	python -m venv "$pkgdir"/opt/rorqual/virtualenv
+	source "$pkgdir"/opt/rorqual/virtualenv/bin/activate
+
+	# Install dependencies
+	pip install --upgrade pip wheel
+	pip install -r requirements.txt
+
+	# Install rorqual
+	pushd $srcdir/${_pkgname}-release-${pkgver}
+	pip install .
+	popd
+
+	# Deactivate virtualenv
+	deactivate
+
+	# Install launcher script
+	install -Dm755 rorqual "$pkgdir"/usr/bin/rorqual
+}
