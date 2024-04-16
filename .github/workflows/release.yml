@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Release
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "release-${{ github.event.inputs.release_number }}"
@@ -23,6 +23,10 @@ jobs:
   prepare_pkgbuild:
     runs-on: ubuntu-latest
     needs: gh_release
+    env:
+      TARBALL_URL: https://github.com/janbuchar/rorqual/archive/refs/tags/release-${{ github.event.inputs.release_number }}.tar.gz
+      RELEASE_NUMBER: ${{ github.event.inputs.release_number }}
+      GH_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,12 +50,9 @@ jobs:
       - name: Copy launcher
         run: cp aur/rorqual out/rorqual
       - name: Create PKGBUILD
-        env:
-          TARBALL_URL: https://github.com/janbuchar/rorqual/archive/refs/tags/release-${{ github.event.inputs.release_number }}.tar.gz
         run: |
           cat aur/PKGBUILD.template | 
-            RELEASE_NUMBER=${{ github.event.inputs.release_number }} \
-            TARBALL_HASH=$(curl -s -L -H "Authorization: Bearer ${{ github.token }}" $TARBALL_URL | sha256sum | cut -f 1 -d " ") \
+            TARBALL_HASH=$(gh api $TARBALL_URL | sha256sum | cut -f 1 -d " ") \
             REQUIREMENTS_HASH=$(sha256sum out/requirements.txt | cut -f 1 -d " ") \
             LAUNCHER_HASH=$(sha256sum out/rorqual | cut -f 1 -d " ") \
             envsubst '${TARBALL_URL} ${RELEASE_NUMBER} ${TARBALL_HASH} ${REQUIREMENTS_HASH} ${LAUNCHER_HASH}' > out/PKGBUILD
@@ -80,7 +81,9 @@ jobs:
           git remote add origin ssh://aur@aur.archlinux.org/rorqual-venv.git
           git pull origin master
       - name: Apply changes
-        run: mv out/* ./
+        run: |
+          mv out/* ./
+          rm -rf out
       - name: Prepare .SRCINFO
         uses: heyhusen/archlinux-package-action@v2.2.1
         with:
