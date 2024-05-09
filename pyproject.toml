@@ -14,16 +14,16 @@ pythonVersion = "3.11"
 name = "rorqual"
 version = "0.0.1"
 description = "A TUI Subsonic client"
-authors = [ "Jan Buchar <Teyras@gmail.com>" ]
+authors = [ "Jan Buchar <rorqual@bucharjan.cz>" ]
 packages = [ { include = "rorqual" }, { include = "subsonic" } ]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
+python = ">=3.10,<3.13"
 httpx = "^0.24.0"
 lxml = "^4.9.2"
 more-itertools = "^9.1.0"
 mpris-server = "^0.4.2"
-mpv = "^1.0.3"
+mpv = "^1.0.6"
 textual = "^0.22.3"
 tomli = "^2.0.1"
 typer = "^0.7.0"
@@ -37,3 +37,4 @@ pydantic = "^1.10.7"
 textual = { version = "^0.22.3", extras = [ "dev" ] }
 black = "^23.3.0"
 isort = "^5.12.0"
+aiohttp = "^3.9.5"
