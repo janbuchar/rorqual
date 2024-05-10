@@ -25,6 +25,8 @@ class AlbumTree(Widget):
         ("l", "expand", "Expand"),
         ("h", "collapse", "Collapse"),
         ("a", "add_to_playlist", "Add to playlist"),
+        ("g", "go_to_top", "Go to top"),
+        ("G", "go_to_bottom", "Go to bottom"),
     ]
 
     DEFAULT_CSS = """
@@ -79,6 +81,12 @@ class AlbumTree(Widget):
 
     def action_up(self) -> None:
         self.query_one(Tree).action_cursor_up()
+
+    def action_go_to_top(self) -> None:
+        self.query_one(Tree).action_scroll_home()
+
+    def action_go_to_bottom(self) -> None:
+        self.query_one(Tree).action_scroll_end()
 
     def action_expand(self) -> None:
         tree = self.query_one(Tree)
