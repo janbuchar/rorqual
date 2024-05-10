@@ -4,6 +4,7 @@ from textual.message import Message
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Tree
+from typing_extensions import override
 
 from rorqual.media_library import MediaLibrary
 from rorqual.subsonic_client import SubsonicClient
@@ -50,6 +51,7 @@ class AlbumTree(Widget):
         super().__init__()
         self.subsonic = subsonic
 
+    @override
     def compose(self) -> ComposeResult:
         yield Container(id="tree")
 

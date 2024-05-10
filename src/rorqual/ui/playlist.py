@@ -6,11 +6,13 @@ from more_itertools import interleave_longest
 from rich.emoji import Emoji
 from rich.segment import Segment
 from rich.style import Style
+from textual import events, on
 from textual.geometry import Region, Size
 from textual.message import Message
 from textual.reactive import reactive
 from textual.scroll_view import ScrollView
 from textual.strip import Strip
+from typing_extensions import override
 
 from rorqual.media_library import MediaLibrary
 from rorqual.stream_manager import FetchingState, StreamManager
@@ -108,6 +110,7 @@ class Playlist(ScrollView, can_focus=True):
     class ClearPlaylist(Message):
         pass
 
+    @override
     def render_line(self, y: int) -> Strip:
         scroll_x, scroll_y = self.scroll_offset
         y += scroll_y
@@ -201,8 +204,9 @@ class Playlist(ScrollView, can_focus=True):
             ]
         )
 
-    def on_mount(self) -> None:
-        self._stream_manager.fetching_state_callbacks.register(self.on_fetch_state_change)
+    @on(events.Mount)
+    def register_fetching_callbacks(self) -> None:
+        self._stream_manager.fetching_state_callbacks.register(self.handle_fetch_state_change)
 
     async def watch_tracks(self, new_tracks: list[Child]) -> None:
         await self._stream_manager.prefetch(track.id for track in new_tracks)
@@ -225,7 +229,7 @@ class Playlist(ScrollView, can_focus=True):
         new_row += self._playlist_rows.sublist_index(new_row) or 0
         self.scroll_to_region(Region(0, new_row, self.size.width, 3))
 
-    def on_fetch_state_change(self, id: str, state: FetchingState) -> None:
+    def handle_fetch_state_change(self, id: str, state: FetchingState) -> None:
         self._fetching_state[id] = state
         self.refresh()
 
