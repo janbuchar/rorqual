@@ -1,6 +1,7 @@
 import asyncio
 import os
 from threading import Thread
+from uuid import uuid4
 
 import textual.app
 import typer
@@ -37,7 +38,7 @@ def main(dev: bool = False):
             cover_manager = CoverManager(subsonic)
             player = SubsonicPlayer(stream_manager, asyncio.get_running_loop())
 
-            mpris_server = Server("Rorqual", adapter=RorqualMprisAdapter(player, cover_manager))
+            mpris_server = Server(f"Rorqual-${uuid4()}", adapter=RorqualMprisAdapter(player, cover_manager))
             RorqualEventAdapter(player, cover_manager, mpris_server)
             mpris_server.publish()
             mpris_thread = Thread(target=mpris_server.loop, daemon=True)
