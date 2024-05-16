@@ -132,6 +132,25 @@ files = [
 test = ["pytest (>=6)"]
 
 [[package]]
+name = "git-cliff"
+version = "2.2.2"
+description = "A highly customizable changelog generator ⛰️"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "git_cliff-2.2.2-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:3a3af4cb34b11875c9c2939d5eae41def33e1cc2bb837069ab61ac2bdec47ad2"},
+    {file = "git_cliff-2.2.2-py3-none-macosx_11_0_arm64.whl", hash = "sha256:8f631e193ea668d4527cf50a258a8e1597058e46021e3ec44a33b4c343e0fee9"},
+    {file = "git_cliff-2.2.2-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:65e7aac3357c75aaaccfe737a38772cada41d734ca86c2ca496ca60fa1e3f2ee"},
+    {file = "git_cliff-2.2.2-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a59730f49e212c4583a967e9ddea7f6c507cee01d461f4c4602a366999e3be73"},
+    {file = "git_cliff-2.2.2-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:0f411a58df635ce779d0048db19d347a0eeb37f3d061e08335659c587518b4cc"},
+    {file = "git_cliff-2.2.2-py3-none-manylinux_2_5_i686.manylinux1_i686.whl", hash = "sha256:6def651f6c44b527f33822c8e063383f2596eab7f0796d06213a31c22302d2c4"},
+    {file = "git_cliff-2.2.2-py3-none-manylinux_2_5_x86_64.manylinux1_x86_64.whl", hash = "sha256:aa3888fc975a0d55a8434ef0ad0d481e918ad761c191a64b29f3ed9337843538"},
+    {file = "git_cliff-2.2.2-py3-none-win32.whl", hash = "sha256:96155b457dec726dcebed2c5a3fecb3994c7991a4ce0779515907fd53945c13d"},
+    {file = "git_cliff-2.2.2-py3-none-win_amd64.whl", hash = "sha256:fa5017b3e204f5cc7c7b4442a082fa9ae6f40736e55353649fcc12e6bb7632be"},
+    {file = "git_cliff-2.2.2.tar.gz", hash = "sha256:1ff34e6659cac3f9fa01645e1edf5bce333d22738a6579be7b8e79c636a6c25f"},
+]
+
+[[package]]
 name = "h11"
 version = "0.14.0"
 description = "A pure-Python, bring-your-own-I/O implementation of HTTP/1.1"
@@ -840,4 +859,4 @@ test = ["codecov", "pre-commit", "pytest", "pytest-benchmark", "pytest-cov", "to
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.13"
-content-hash = "1e1dc5222b197012c027be3a33266f885b16f0ef0253a477ddbd7a05008d6223"
+content-hash = "6d3b2ef20bd841fc8df55b468b89925a69ba8be2fdec1edce6bd9a48f5775001"
