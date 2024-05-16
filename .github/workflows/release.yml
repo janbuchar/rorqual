@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
     inputs: {}
 
+env:
+  PR_BRANCH: release-ci-${{ github.sha }}
+
 jobs:
 
   gh_release:
@@ -12,9 +15,19 @@ jobs:
       release_number: ${{ steps.determine_number.outputs.release_number }}
     env:
       GH_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up git
+        run: |
+          git config --global user.email "ci@bucharjan.cz"
+          git config --global user.name "Jan Buchar"
+
       - name: Determine release number
         id: determine_number
         run: |
@@ -23,11 +36,52 @@ jobs:
             cut -d '-' -f 2 |
             sort -n -r |
             head -n 1) )) >> "$GITHUB_OUTPUT"
+
+      - name: Create branch
+        run: |
+          git switch -c ${{ env.PR_BRANCH }}
+
+      - name: Update changelog
+        uses: orhun/git-cliff-action@v3
+        with:
+          config: cliff.toml
+          args: --tag "release-${{ steps.determine_number.outputs.release_number }}"
+        env:
+          OUTPUT: CHANGELOG.md
+
+      - name: Generate release notes
+        uses: orhun/git-cliff-action@v3
+        with:
+          config: cliff.toml
+          args: --tag "release-${{ steps.determine_number.outputs.release_number }}" --unreleased --strip all
+        env:
+          OUTPUT: release_notes.md
+
+      - name: Push branch and create PR
+        run: |
+          git commit -am "Release ${{ steps.determine_number.outputs.release_number }}"
+          git push --set-upstream origin ${{ env.PR_BRANCH }}
+          gh pr create \
+            --base master \
+            --head ${{ env.PR_BRANCH }} \
+            --title "chore: Release ${{ steps.determine_number.outputs.release_number }} [skip-ci]" \
+            --body "Automated pull request - prepare release ${{ steps.determine_number.outputs.release_number }}"
+
+      - name: Merge PR
+        id: merge_pr
+        run: |
+          gh pr merge --squash --auto --delete-branch ${{ env.PR_BRANCH }}
+          echo sha=$( gh pr view --json mergeCommit ${{ env.PR_BRANCH }} | jq --raw-output .mergeCommit.oid ) >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
+
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "release-${{ steps.determine_number.outputs.release_number }}"
           name: "Release ${{ steps.determine_number.outputs.release_number }}"
+          target_commitish: ${{ steps.merge_pr.outputs.sha }}
+          body_path: release_notes.md
 
   prepare_pkgbuild:
     runs-on: ubuntu-latest
