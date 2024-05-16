@@ -2,5 +2,7 @@ Session.vim
 .envrc
 .nvimrc
 .direnv
+.venv
+.mise.toml
 __pycache__
 dist
