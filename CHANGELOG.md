@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## Release 4 - 2024-05-16
+
+### 📚 Documentation
+
+- Add changelog
+
+### ⚙️ Miscellaneous Tasks
+
+- Extend .gitignore
+- Update changelog on release
+
 ## Release 3 - 2024-05-10
 
 ### 🚀 Features
