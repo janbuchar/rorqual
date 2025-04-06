@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release_number: ${{ steps.determine_number.outputs.release_number }}
+    env:
+      GH_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
     permissions:
       contents: write
     steps:
