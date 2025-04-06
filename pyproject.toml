@@ -46,6 +46,7 @@ dev = [
     "git-cliff>=2.2.2,<3",
     "basedpyright>=1.28.4,<2",
     "ruff>=0.11.4",
+    "xsdata[cli]>=24.12",
 ]
 
 [tool.basedpyright]
