@@ -1,4 +1,5 @@
-from typing import Any, Callable, Generic, ParamSpec
+from collections.abc import Callable
+from typing import Any, Generic, ParamSpec
 
 TArgs = ParamSpec("TArgs")
 

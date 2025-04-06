@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional
 
 from xsdata.models.datatype import XmlDateTime
 
@@ -24,20 +23,20 @@ class AlbumId3:
             "required": True,
         }
     )
-    artist: Optional[str] = field(
+    artist: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    artist_id: Optional[str] = field(
+    artist_id: str | None = field(
         default=None,
         metadata={
             "name": "artistId",
             "type": "Attribute",
         },
     )
-    cover_art: Optional[str] = field(
+    cover_art: str | None = field(
         default=None,
         metadata={
             "name": "coverArt",
@@ -57,7 +56,7 @@ class AlbumId3:
             "required": True,
         }
     )
-    play_count: Optional[int] = field(
+    play_count: int | None = field(
         default=None,
         metadata={
             "name": "playCount",
@@ -70,19 +69,19 @@ class AlbumId3:
             "required": True,
         }
     )
-    starred: Optional[XmlDateTime] = field(
+    starred: XmlDateTime | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    year: Optional[int] = field(
+    year: int | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    genre: Optional[str] = field(
+    genre: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -92,14 +91,14 @@ class AlbumId3:
 
 @dataclass(kw_only=True)
 class AlbumInfo:
-    notes: Optional[str] = field(
+    notes: str | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    music_brainz_id: Optional[str] = field(
+    music_brainz_id: str | None = field(
         default=None,
         metadata={
             "name": "musicBrainzId",
@@ -107,7 +106,7 @@ class AlbumInfo:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    last_fm_url: Optional[str] = field(
+    last_fm_url: str | None = field(
         default=None,
         metadata={
             "name": "lastFmUrl",
@@ -115,7 +114,7 @@ class AlbumInfo:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    small_image_url: Optional[str] = field(
+    small_image_url: str | None = field(
         default=None,
         metadata={
             "name": "smallImageUrl",
@@ -123,7 +122,7 @@ class AlbumInfo:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    medium_image_url: Optional[str] = field(
+    medium_image_url: str | None = field(
         default=None,
         metadata={
             "name": "mediumImageUrl",
@@ -131,7 +130,7 @@ class AlbumInfo:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    large_image_url: Optional[str] = field(
+    large_image_url: str | None = field(
         default=None,
         metadata={
             "name": "largeImageUrl",
@@ -155,20 +154,20 @@ class Artist:
             "required": True,
         }
     )
-    artist_image_url: Optional[str] = field(
+    artist_image_url: str | None = field(
         default=None,
         metadata={
             "name": "artistImageUrl",
             "type": "Attribute",
         },
     )
-    starred: Optional[XmlDateTime] = field(
+    starred: XmlDateTime | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    user_rating: Optional[int] = field(
+    user_rating: int | None = field(
         default=None,
         metadata={
             "name": "userRating",
@@ -177,7 +176,7 @@ class Artist:
             "max_inclusive": 5,
         },
     )
-    average_rating: Optional[float] = field(
+    average_rating: float | None = field(
         default=None,
         metadata={
             "name": "averageRating",
@@ -205,14 +204,14 @@ class ArtistId3:
             "required": True,
         }
     )
-    cover_art: Optional[str] = field(
+    cover_art: str | None = field(
         default=None,
         metadata={
             "name": "coverArt",
             "type": "Attribute",
         },
     )
-    artist_image_url: Optional[str] = field(
+    artist_image_url: str | None = field(
         default=None,
         metadata={
             "name": "artistImageUrl",
@@ -226,7 +225,7 @@ class ArtistId3:
             "required": True,
         }
     )
-    starred: Optional[XmlDateTime] = field(
+    starred: XmlDateTime | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -236,14 +235,14 @@ class ArtistId3:
 
 @dataclass(kw_only=True)
 class ArtistInfoBase:
-    biography: Optional[str] = field(
+    biography: str | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    music_brainz_id: Optional[str] = field(
+    music_brainz_id: str | None = field(
         default=None,
         metadata={
             "name": "musicBrainzId",
@@ -251,7 +250,7 @@ class ArtistInfoBase:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    last_fm_url: Optional[str] = field(
+    last_fm_url: str | None = field(
         default=None,
         metadata={
             "name": "lastFmUrl",
@@ -259,7 +258,7 @@ class ArtistInfoBase:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    small_image_url: Optional[str] = field(
+    small_image_url: str | None = field(
         default=None,
         metadata={
             "name": "smallImageUrl",
@@ -267,7 +266,7 @@ class ArtistInfoBase:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    medium_image_url: Optional[str] = field(
+    medium_image_url: str | None = field(
         default=None,
         metadata={
             "name": "mediumImageUrl",
@@ -275,7 +274,7 @@ class ArtistInfoBase:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    large_image_url: Optional[str] = field(
+    large_image_url: str | None = field(
         default=None,
         metadata={
             "name": "largeImageUrl",
@@ -293,13 +292,13 @@ class AudioTrack:
             "required": True,
         }
     )
-    name: Optional[str] = field(
+    name: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    language_code: Optional[str] = field(
+    language_code: str | None = field(
         default=None,
         metadata={
             "name": "languageCode",
@@ -316,7 +315,7 @@ class Captions:
             "required": True,
         }
     )
-    name: Optional[str] = field(
+    name: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -354,7 +353,7 @@ class Error:
             "required": True,
         }
     )
-    message: Optional[str] = field(
+    message: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -378,7 +377,7 @@ class Genre:
             "required": True,
         }
     )
-    content: List[object] = field(
+    content: list[object] = field(
         default_factory=list,
         metadata={
             "type": "Wildcard",
@@ -409,7 +408,7 @@ class InternetRadioStation:
             "required": True,
         }
     )
-    home_page_url: Optional[str] = field(
+    home_page_url: str | None = field(
         default=None,
         metadata={
             "name": "homePageUrl",
@@ -439,7 +438,7 @@ class JukeboxStatus:
             "required": True,
         }
     )
-    position: Optional[int] = field(
+    position: int | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -455,20 +454,20 @@ class License:
             "required": True,
         }
     )
-    email: Optional[str] = field(
+    email: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    license_expires: Optional[XmlDateTime] = field(
+    license_expires: XmlDateTime | None = field(
         default=None,
         metadata={
             "name": "licenseExpires",
             "type": "Attribute",
         },
     )
-    trial_expires: Optional[XmlDateTime] = field(
+    trial_expires: XmlDateTime | None = field(
         default=None,
         metadata={
             "name": "trialExpires",
@@ -479,19 +478,19 @@ class License:
 
 @dataclass(kw_only=True)
 class Lyrics:
-    artist: Optional[str] = field(
+    artist: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    title: Optional[str] = field(
+    title: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    content: List[object] = field(
+    content: list[object] = field(
         default_factory=list,
         metadata={
             "type": "Wildcard",
@@ -516,7 +515,7 @@ class MusicFolder:
             "required": True,
         }
     )
-    name: Optional[str] = field(
+    name: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -526,7 +525,7 @@ class MusicFolder:
 
 @dataclass(kw_only=True)
 class Playlist:
-    allowed_user: List[str] = field(
+    allowed_user: list[str] = field(
         default_factory=list,
         metadata={
             "name": "allowedUser",
@@ -546,19 +545,19 @@ class Playlist:
             "required": True,
         }
     )
-    comment: Optional[str] = field(
+    comment: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    owner: Optional[str] = field(
+    owner: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    public: Optional[bool] = field(
+    public: bool | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -589,7 +588,7 @@ class Playlist:
             "required": True,
         }
     )
-    cover_art: Optional[str] = field(
+    cover_art: str | None = field(
         default=None,
         metadata={
             "name": "coverArt",
@@ -620,7 +619,7 @@ class ScanStatus:
             "required": True,
         }
     )
-    count: Optional[int] = field(
+    count: int | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -630,7 +629,7 @@ class ScanStatus:
 
 @dataclass(kw_only=True)
 class User:
-    folder: List[int] = field(
+    folder: list[int] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -643,7 +642,7 @@ class User:
             "required": True,
         }
     )
-    email: Optional[str] = field(
+    email: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -656,7 +655,7 @@ class User:
             "required": True,
         }
     )
-    max_bit_rate: Optional[int] = field(
+    max_bit_rate: int | None = field(
         default=None,
         metadata={
             "name": "maxBitRate",
@@ -747,7 +746,7 @@ class User:
             "required": True,
         }
     )
-    avatar_last_changed: Optional[XmlDateTime] = field(
+    avatar_last_changed: XmlDateTime | None = field(
         default=None,
         metadata={
             "name": "avatarLastChanged",
@@ -764,14 +763,14 @@ class VideoConversion:
             "required": True,
         }
     )
-    bit_rate: Optional[int] = field(
+    bit_rate: int | None = field(
         default=None,
         metadata={
             "name": "bitRate",
             "type": "Attribute",
         },
     )
-    audio_track_id: Optional[int] = field(
+    audio_track_id: int | None = field(
         default=None,
         metadata={
             "name": "audioTrackId",
@@ -782,7 +781,7 @@ class VideoConversion:
 
 @dataclass(kw_only=True)
 class AlbumList2:
-    album: List[AlbumId3] = field(
+    album: list[AlbumId3] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -793,7 +792,7 @@ class AlbumList2:
 
 @dataclass(kw_only=True)
 class ArtistInfo(ArtistInfoBase):
-    similar_artist: List[Artist] = field(
+    similar_artist: list[Artist] = field(
         default_factory=list,
         metadata={
             "name": "similarArtist",
@@ -805,7 +804,7 @@ class ArtistInfo(ArtistInfoBase):
 
 @dataclass(kw_only=True)
 class ArtistInfo2(ArtistInfoBase):
-    similar_artist: List[ArtistId3] = field(
+    similar_artist: list[ArtistId3] = field(
         default_factory=list,
         metadata={
             "name": "similarArtist",
@@ -820,7 +819,7 @@ class ArtistWithAlbumsId3(ArtistId3):
     class Meta:
         name = "ArtistWithAlbumsID3"
 
-    album: List[AlbumId3] = field(
+    album: list[AlbumId3] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -831,7 +830,7 @@ class ArtistWithAlbumsId3(ArtistId3):
 
 @dataclass(kw_only=True)
 class ChatMessages:
-    chat_message: List[ChatMessage] = field(
+    chat_message: list[ChatMessage] = field(
         default_factory=list,
         metadata={
             "name": "chatMessage",
@@ -849,7 +848,7 @@ class Child:
             "required": True,
         }
     )
-    parent: Optional[str] = field(
+    parent: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -868,103 +867,103 @@ class Child:
             "required": True,
         }
     )
-    album: Optional[str] = field(
+    album: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    artist: Optional[str] = field(
+    artist: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    track: Optional[int] = field(
+    track: int | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    year: Optional[int] = field(
+    year: int | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    genre: Optional[str] = field(
+    genre: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    cover_art: Optional[str] = field(
+    cover_art: str | None = field(
         default=None,
         metadata={
             "name": "coverArt",
             "type": "Attribute",
         },
     )
-    size: Optional[int] = field(
+    size: int | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    content_type: Optional[str] = field(
+    content_type: str | None = field(
         default=None,
         metadata={
             "name": "contentType",
             "type": "Attribute",
         },
     )
-    suffix: Optional[str] = field(
+    suffix: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    transcoded_content_type: Optional[str] = field(
+    transcoded_content_type: str | None = field(
         default=None,
         metadata={
             "name": "transcodedContentType",
             "type": "Attribute",
         },
     )
-    transcoded_suffix: Optional[str] = field(
+    transcoded_suffix: str | None = field(
         default=None,
         metadata={
             "name": "transcodedSuffix",
             "type": "Attribute",
         },
     )
-    duration: Optional[int] = field(
+    duration: int | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    bit_rate: Optional[int] = field(
+    bit_rate: int | None = field(
         default=None,
         metadata={
             "name": "bitRate",
             "type": "Attribute",
         },
     )
-    path: Optional[str] = field(
+    path: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    is_video: Optional[bool] = field(
+    is_video: bool | None = field(
         default=None,
         metadata={
             "name": "isVideo",
             "type": "Attribute",
         },
     )
-    user_rating: Optional[int] = field(
+    user_rating: int | None = field(
         default=None,
         metadata={
             "name": "userRating",
@@ -973,7 +972,7 @@ class Child:
             "max_inclusive": 5,
         },
     )
-    average_rating: Optional[float] = field(
+    average_rating: float | None = field(
         default=None,
         metadata={
             "name": "averageRating",
@@ -982,67 +981,67 @@ class Child:
             "max_inclusive": 5.0,
         },
     )
-    play_count: Optional[int] = field(
+    play_count: int | None = field(
         default=None,
         metadata={
             "name": "playCount",
             "type": "Attribute",
         },
     )
-    disc_number: Optional[int] = field(
+    disc_number: int | None = field(
         default=None,
         metadata={
             "name": "discNumber",
             "type": "Attribute",
         },
     )
-    created: Optional[XmlDateTime] = field(
+    created: XmlDateTime | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    starred: Optional[XmlDateTime] = field(
+    starred: XmlDateTime | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    album_id: Optional[str] = field(
+    album_id: str | None = field(
         default=None,
         metadata={
             "name": "albumId",
             "type": "Attribute",
         },
     )
-    artist_id: Optional[str] = field(
+    artist_id: str | None = field(
         default=None,
         metadata={
             "name": "artistId",
             "type": "Attribute",
         },
     )
-    type: Optional[MediaType] = field(
+    type: MediaType | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    bookmark_position: Optional[int] = field(
+    bookmark_position: int | None = field(
         default=None,
         metadata={
             "name": "bookmarkPosition",
             "type": "Attribute",
         },
     )
-    original_width: Optional[int] = field(
+    original_width: int | None = field(
         default=None,
         metadata={
             "name": "originalWidth",
             "type": "Attribute",
         },
     )
-    original_height: Optional[int] = field(
+    original_height: int | None = field(
         default=None,
         metadata={
             "name": "originalHeight",
@@ -1053,7 +1052,7 @@ class Child:
 
 @dataclass(kw_only=True)
 class Genres:
-    genre: List[Genre] = field(
+    genre: list[Genre] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1064,7 +1063,7 @@ class Genres:
 
 @dataclass(kw_only=True)
 class Index:
-    artist: List[Artist] = field(
+    artist: list[Artist] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1084,7 +1083,7 @@ class IndexId3:
     class Meta:
         name = "IndexID3"
 
-    artist: List[ArtistId3] = field(
+    artist: list[ArtistId3] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1101,7 +1100,7 @@ class IndexId3:
 
 @dataclass(kw_only=True)
 class InternetRadioStations:
-    internet_radio_station: List[InternetRadioStation] = field(
+    internet_radio_station: list[InternetRadioStation] = field(
         default_factory=list,
         metadata={
             "name": "internetRadioStation",
@@ -1113,7 +1112,7 @@ class InternetRadioStations:
 
 @dataclass(kw_only=True)
 class MusicFolders:
-    music_folder: List[MusicFolder] = field(
+    music_folder: list[MusicFolder] = field(
         default_factory=list,
         metadata={
             "name": "musicFolder",
@@ -1125,7 +1124,7 @@ class MusicFolders:
 
 @dataclass(kw_only=True)
 class Playlists:
-    playlist: List[Playlist] = field(
+    playlist: list[Playlist] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1136,7 +1135,7 @@ class Playlists:
 
 @dataclass(kw_only=True)
 class Users:
-    user: List[User] = field(
+    user: list[User] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1147,14 +1146,14 @@ class Users:
 
 @dataclass(kw_only=True)
 class VideoInfo:
-    captions: List[Captions] = field(
+    captions: list[Captions] = field(
         default_factory=list,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    audio_track: List[AudioTrack] = field(
+    audio_track: list[AudioTrack] = field(
         default_factory=list,
         metadata={
             "name": "audioTrack",
@@ -1162,7 +1161,7 @@ class VideoInfo:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    conversion: List[VideoConversion] = field(
+    conversion: list[VideoConversion] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1179,7 +1178,7 @@ class VideoInfo:
 
 @dataclass(kw_only=True)
 class AlbumList:
-    album: List[Child] = field(
+    album: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1193,7 +1192,7 @@ class AlbumWithSongsId3(AlbumId3):
     class Meta:
         name = "AlbumWithSongsID3"
 
-    song: List[Child] = field(
+    song: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1207,7 +1206,7 @@ class ArtistsId3:
     class Meta:
         name = "ArtistsID3"
 
-    index: List[IndexId3] = field(
+    index: list[IndexId3] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1244,7 +1243,7 @@ class Bookmark:
             "required": True,
         }
     )
-    comment: Optional[str] = field(
+    comment: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -1266,7 +1265,7 @@ class Bookmark:
 
 @dataclass(kw_only=True)
 class Directory:
-    child: List[Child] = field(
+    child: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1279,7 +1278,7 @@ class Directory:
             "required": True,
         }
     )
-    parent: Optional[str] = field(
+    parent: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -1291,13 +1290,13 @@ class Directory:
             "required": True,
         }
     )
-    starred: Optional[XmlDateTime] = field(
+    starred: XmlDateTime | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    user_rating: Optional[int] = field(
+    user_rating: int | None = field(
         default=None,
         metadata={
             "name": "userRating",
@@ -1306,7 +1305,7 @@ class Directory:
             "max_inclusive": 5,
         },
     )
-    average_rating: Optional[float] = field(
+    average_rating: float | None = field(
         default=None,
         metadata={
             "name": "averageRating",
@@ -1315,7 +1314,7 @@ class Directory:
             "max_inclusive": 5.0,
         },
     )
-    play_count: Optional[int] = field(
+    play_count: int | None = field(
         default=None,
         metadata={
             "name": "playCount",
@@ -1326,21 +1325,21 @@ class Directory:
 
 @dataclass(kw_only=True)
 class Indexes:
-    shortcut: List[Artist] = field(
+    shortcut: list[Artist] = field(
         default_factory=list,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    index: List[Index] = field(
+    index: list[Index] = field(
         default_factory=list,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    child: List[Child] = field(
+    child: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1365,7 +1364,7 @@ class Indexes:
 
 @dataclass(kw_only=True)
 class JukeboxPlaylist(JukeboxStatus):
-    entry: List[Child] = field(
+    entry: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1396,7 +1395,7 @@ class NowPlayingEntry(Child):
             "required": True,
         }
     )
-    player_name: Optional[str] = field(
+    player_name: str | None = field(
         default=None,
         metadata={
             "name": "playerName",
@@ -1407,20 +1406,20 @@ class NowPlayingEntry(Child):
 
 @dataclass(kw_only=True)
 class PlayQueue:
-    entry: List[Child] = field(
+    entry: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    current: Optional[int] = field(
+    current: int | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    position: Optional[int] = field(
+    position: int | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -1449,7 +1448,7 @@ class PlayQueue:
 
 @dataclass(kw_only=True)
 class PlaylistWithSongs(Playlist):
-    entry: List[Child] = field(
+    entry: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1460,7 +1459,7 @@ class PlaylistWithSongs(Playlist):
 
 @dataclass(kw_only=True)
 class PodcastEpisode(Child):
-    stream_id: Optional[str] = field(
+    stream_id: str | None = field(
         default=None,
         metadata={
             "name": "streamId",
@@ -1474,7 +1473,7 @@ class PodcastEpisode(Child):
             "required": True,
         }
     )
-    description: Optional[str] = field(
+    description: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -1486,7 +1485,7 @@ class PodcastEpisode(Child):
             "required": True,
         }
     )
-    publish_date: Optional[XmlDateTime] = field(
+    publish_date: XmlDateTime | None = field(
         default=None,
         metadata={
             "name": "publishDate",
@@ -1497,7 +1496,7 @@ class PodcastEpisode(Child):
 
 @dataclass(kw_only=True)
 class SearchResult:
-    match: List[Child] = field(
+    match: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1521,21 +1520,21 @@ class SearchResult:
 
 @dataclass(kw_only=True)
 class SearchResult2:
-    artist: List[Artist] = field(
+    artist: list[Artist] = field(
         default_factory=list,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    album: List[Child] = field(
+    album: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    song: List[Child] = field(
+    song: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1546,21 +1545,21 @@ class SearchResult2:
 
 @dataclass(kw_only=True)
 class SearchResult3:
-    artist: List[ArtistId3] = field(
+    artist: list[ArtistId3] = field(
         default_factory=list,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    album: List[AlbumId3] = field(
+    album: list[AlbumId3] = field(
         default_factory=list,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    song: List[Child] = field(
+    song: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1571,7 +1570,7 @@ class SearchResult3:
 
 @dataclass(kw_only=True)
 class Share:
-    entry: List[Child] = field(
+    entry: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1590,7 +1589,7 @@ class Share:
             "required": True,
         }
     )
-    description: Optional[str] = field(
+    description: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
@@ -1608,13 +1607,13 @@ class Share:
             "required": True,
         }
     )
-    expires: Optional[XmlDateTime] = field(
+    expires: XmlDateTime | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    last_visited: Optional[XmlDateTime] = field(
+    last_visited: XmlDateTime | None = field(
         default=None,
         metadata={
             "name": "lastVisited",
@@ -1632,7 +1631,7 @@ class Share:
 
 @dataclass(kw_only=True)
 class SimilarSongs:
-    song: List[Child] = field(
+    song: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1643,7 +1642,7 @@ class SimilarSongs:
 
 @dataclass(kw_only=True)
 class SimilarSongs2:
-    song: List[Child] = field(
+    song: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1654,7 +1653,7 @@ class SimilarSongs2:
 
 @dataclass(kw_only=True)
 class Songs:
-    song: List[Child] = field(
+    song: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1665,21 +1664,21 @@ class Songs:
 
 @dataclass(kw_only=True)
 class Starred:
-    artist: List[Artist] = field(
+    artist: list[Artist] = field(
         default_factory=list,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    album: List[Child] = field(
+    album: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    song: List[Child] = field(
+    song: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1690,21 +1689,21 @@ class Starred:
 
 @dataclass(kw_only=True)
 class Starred2:
-    artist: List[ArtistId3] = field(
+    artist: list[ArtistId3] = field(
         default_factory=list,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    album: List[AlbumId3] = field(
+    album: list[AlbumId3] = field(
         default_factory=list,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    song: List[Child] = field(
+    song: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1715,7 +1714,7 @@ class Starred2:
 
 @dataclass(kw_only=True)
 class TopSongs:
-    song: List[Child] = field(
+    song: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1726,7 +1725,7 @@ class TopSongs:
 
 @dataclass(kw_only=True)
 class Videos:
-    video: List[Child] = field(
+    video: list[Child] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1737,7 +1736,7 @@ class Videos:
 
 @dataclass(kw_only=True)
 class Bookmarks:
-    bookmark: List[Bookmark] = field(
+    bookmark: list[Bookmark] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1748,7 +1747,7 @@ class Bookmarks:
 
 @dataclass(kw_only=True)
 class NewestPodcasts:
-    episode: List[PodcastEpisode] = field(
+    episode: list[PodcastEpisode] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1759,7 +1758,7 @@ class NewestPodcasts:
 
 @dataclass(kw_only=True)
 class NowPlaying:
-    entry: List[NowPlayingEntry] = field(
+    entry: list[NowPlayingEntry] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1770,7 +1769,7 @@ class NowPlaying:
 
 @dataclass(kw_only=True)
 class PodcastChannel:
-    episode: List[PodcastEpisode] = field(
+    episode: list[PodcastEpisode] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1789,26 +1788,26 @@ class PodcastChannel:
             "required": True,
         }
     )
-    title: Optional[str] = field(
+    title: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    description: Optional[str] = field(
+    description: str | None = field(
         default=None,
         metadata={
             "type": "Attribute",
         },
     )
-    cover_art: Optional[str] = field(
+    cover_art: str | None = field(
         default=None,
         metadata={
             "name": "coverArt",
             "type": "Attribute",
         },
     )
-    original_image_url: Optional[str] = field(
+    original_image_url: str | None = field(
         default=None,
         metadata={
             "name": "originalImageUrl",
@@ -1821,7 +1820,7 @@ class PodcastChannel:
             "required": True,
         }
     )
-    error_message: Optional[str] = field(
+    error_message: str | None = field(
         default=None,
         metadata={
             "name": "errorMessage",
@@ -1832,7 +1831,7 @@ class PodcastChannel:
 
 @dataclass(kw_only=True)
 class Shares:
-    share: List[Share] = field(
+    share: list[Share] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1843,7 +1842,7 @@ class Shares:
 
 @dataclass(kw_only=True)
 class Podcasts:
-    channel: List[PodcastChannel] = field(
+    channel: list[PodcastChannel] = field(
         default_factory=list,
         metadata={
             "type": "Element",
@@ -1854,7 +1853,7 @@ class Podcasts:
 
 @dataclass(kw_only=True)
 class Response:
-    music_folders: Optional[MusicFolders] = field(
+    music_folders: MusicFolders | None = field(
         default=None,
         metadata={
             "name": "musicFolders",
@@ -1862,63 +1861,63 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    indexes: Optional[Indexes] = field(
+    indexes: Indexes | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    directory: Optional[Directory] = field(
+    directory: Directory | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    genres: Optional[Genres] = field(
+    genres: Genres | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    artists: Optional[ArtistsId3] = field(
+    artists: ArtistsId3 | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    artist: Optional[ArtistWithAlbumsId3] = field(
+    artist: ArtistWithAlbumsId3 | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    album: Optional[AlbumWithSongsId3] = field(
+    album: AlbumWithSongsId3 | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    song: Optional[Child] = field(
+    song: Child | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    videos: Optional[Videos] = field(
+    videos: Videos | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    video_info: Optional[VideoInfo] = field(
+    video_info: VideoInfo | None = field(
         default=None,
         metadata={
             "name": "videoInfo",
@@ -1926,7 +1925,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    now_playing: Optional[NowPlaying] = field(
+    now_playing: NowPlaying | None = field(
         default=None,
         metadata={
             "name": "nowPlaying",
@@ -1934,7 +1933,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    search_result: Optional[SearchResult] = field(
+    search_result: SearchResult | None = field(
         default=None,
         metadata={
             "name": "searchResult",
@@ -1942,7 +1941,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    search_result2: Optional[SearchResult2] = field(
+    search_result2: SearchResult2 | None = field(
         default=None,
         metadata={
             "name": "searchResult2",
@@ -1950,7 +1949,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    search_result3: Optional[SearchResult3] = field(
+    search_result3: SearchResult3 | None = field(
         default=None,
         metadata={
             "name": "searchResult3",
@@ -1958,21 +1957,21 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    playlists: Optional[Playlists] = field(
+    playlists: Playlists | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    playlist: Optional[PlaylistWithSongs] = field(
+    playlist: PlaylistWithSongs | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    jukebox_status: Optional[JukeboxStatus] = field(
+    jukebox_status: JukeboxStatus | None = field(
         default=None,
         metadata={
             "name": "jukeboxStatus",
@@ -1980,7 +1979,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    jukebox_playlist: Optional[JukeboxPlaylist] = field(
+    jukebox_playlist: JukeboxPlaylist | None = field(
         default=None,
         metadata={
             "name": "jukeboxPlaylist",
@@ -1988,28 +1987,28 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    license: Optional[License] = field(
+    license: License | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    users: Optional[Users] = field(
+    users: Users | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    user: Optional[User] = field(
+    user: User | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    chat_messages: Optional[ChatMessages] = field(
+    chat_messages: ChatMessages | None = field(
         default=None,
         metadata={
             "name": "chatMessages",
@@ -2017,7 +2016,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    album_list: Optional[AlbumList] = field(
+    album_list: AlbumList | None = field(
         default=None,
         metadata={
             "name": "albumList",
@@ -2025,7 +2024,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    album_list2: Optional[AlbumList2] = field(
+    album_list2: AlbumList2 | None = field(
         default=None,
         metadata={
             "name": "albumList2",
@@ -2033,7 +2032,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    random_songs: Optional[Songs] = field(
+    random_songs: Songs | None = field(
         default=None,
         metadata={
             "name": "randomSongs",
@@ -2041,7 +2040,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    songs_by_genre: Optional[Songs] = field(
+    songs_by_genre: Songs | None = field(
         default=None,
         metadata={
             "name": "songsByGenre",
@@ -2049,21 +2048,21 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    lyrics: Optional[Lyrics] = field(
+    lyrics: Lyrics | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    podcasts: Optional[Podcasts] = field(
+    podcasts: Podcasts | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    newest_podcasts: Optional[NewestPodcasts] = field(
+    newest_podcasts: NewestPodcasts | None = field(
         default=None,
         metadata={
             "name": "newestPodcasts",
@@ -2071,7 +2070,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    internet_radio_stations: Optional[InternetRadioStations] = field(
+    internet_radio_stations: InternetRadioStations | None = field(
         default=None,
         metadata={
             "name": "internetRadioStations",
@@ -2079,14 +2078,14 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    bookmarks: Optional[Bookmarks] = field(
+    bookmarks: Bookmarks | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    play_queue: Optional[PlayQueue] = field(
+    play_queue: PlayQueue | None = field(
         default=None,
         metadata={
             "name": "playQueue",
@@ -2094,28 +2093,28 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    shares: Optional[Shares] = field(
+    shares: Shares | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    starred: Optional[Starred] = field(
+    starred: Starred | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    starred2: Optional[Starred2] = field(
+    starred2: Starred2 | None = field(
         default=None,
         metadata={
             "type": "Element",
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    album_info: Optional[AlbumInfo] = field(
+    album_info: AlbumInfo | None = field(
         default=None,
         metadata={
             "name": "albumInfo",
@@ -2123,7 +2122,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    artist_info: Optional[ArtistInfo] = field(
+    artist_info: ArtistInfo | None = field(
         default=None,
         metadata={
             "name": "artistInfo",
@@ -2131,7 +2130,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    artist_info2: Optional[ArtistInfo2] = field(
+    artist_info2: ArtistInfo2 | None = field(
         default=None,
         metadata={
             "name": "artistInfo2",
@@ -2139,7 +2138,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    similar_songs: Optional[SimilarSongs] = field(
+    similar_songs: SimilarSongs | None = field(
         default=None,
         metadata={
             "name": "similarSongs",
@@ -2147,7 +2146,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    similar_songs2: Optional[SimilarSongs2] = field(
+    similar_songs2: SimilarSongs2 | None = field(
         default=None,
         metadata={
             "name": "similarSongs2",
@@ -2155,7 +2154,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    top_songs: Optional[TopSongs] = field(
+    top_songs: TopSongs | None = field(
         default=None,
         metadata={
             "name": "topSongs",
@@ -2163,7 +2162,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    scan_status: Optional[ScanStatus] = field(
+    scan_status: ScanStatus | None = field(
         default=None,
         metadata={
             "name": "scanStatus",
@@ -2171,7 +2170,7 @@ class Response:
             "namespace": "http://subsonic.org/restapi",
         },
     )
-    error: Optional[Error] = field(
+    error: Error | None = field(
         default=None,
         metadata={
             "type": "Element",

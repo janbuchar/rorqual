@@ -36,3 +36,13 @@ jobs:
         shell: bash
         run: |
           uv run basedpyright
+
+      - name: Lint
+        shell: bash
+        run: |
+          ruff check
+
+      - name: Check format
+        shell: bash
+        run: |
+          ruff format --check

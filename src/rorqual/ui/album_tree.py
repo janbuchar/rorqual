@@ -1,11 +1,11 @@
-from typing import Any
+from typing import Any, override
+
 from textual.app import ComposeResult
 from textual.containers import Container
 from textual.message import Message
 from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Tree
-from typing_extensions import override
 
 from rorqual.media_library import MediaLibrary
 from rorqual.subsonic_client import SubsonicClient

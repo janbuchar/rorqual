@@ -1,6 +1,6 @@
 from functools import cached_property
 from itertools import accumulate, groupby, pairwise
-from typing import cast
+from typing import cast, override
 
 from more_itertools import interleave_longest
 from rich.emoji import Emoji
@@ -12,7 +12,6 @@ from textual.message import Message
 from textual.reactive import reactive
 from textual.scroll_view import ScrollView
 from textual.strip import Strip
-from typing_extensions import override
 
 from rorqual.media_library import MediaLibrary
 from rorqual.stream_manager import FetchingState, StreamManager
@@ -32,7 +31,10 @@ class PlaylistRows(list[tuple[AlbumId3, list[Child]]]):
         return sum(len(tracks) + 1 for _, tracks in self)
 
     def sublist_index(self, y: int) -> int | None:
-        return next((i for i, (_, next_stop) in enumerate(pairwise(self.sublist_stops)) if y < next_stop), None)
+        return next(
+            (i for i, (_, next_stop) in enumerate(pairwise(self.sublist_stops)) if y < next_stop),
+            None,
+        )
 
 
 class Playlist(ScrollView, can_focus=True):
@@ -141,7 +143,11 @@ class Playlist(ScrollView, can_focus=True):
         style = self.get_component_styles("album-strip").rich_style
 
         max_width = self.size.width if self._playlist_rows.total_size < self.size.height else self.size.width - 2
-        segments = [f"[{album.year}]", f"{album.artist} - {album.name}", duration(album_duration)]
+        segments = [
+            f"[{album.year}]",
+            f"{album.artist} - {album.name}",
+            duration(album_duration),
+        ]
         available_space = max(1, max_width - len(segments) - sum(len(segment) for segment in segments))
 
         return Strip(
@@ -189,7 +195,12 @@ class Playlist(ScrollView, can_focus=True):
                 icon = ""
 
         max_width = self.size.width if self._playlist_rows.total_size < self.size.height else self.size.width - 2
-        segments = [str(icon), f"{track.track or '':3}", track.title, duration(track.duration or 0)]
+        segments = [
+            str(icon),
+            f"{track.track or '':3}",
+            track.title,
+            duration(track.duration or 0),
+        ]
         available_space = max(1, max_width - len(segments) - sum(len(segment) for segment in segments))
 
         return Strip(
@@ -224,7 +235,8 @@ class Playlist(ScrollView, can_focus=True):
 
     def watch__playlist_rows(self, new_rows: PlaylistRows) -> None:
         self.virtual_size = Size(
-            self.size.width if new_rows.total_size < self.size.height else self.size.width - 2, new_rows.total_size
+            self.size.width if new_rows.total_size < self.size.height else self.size.width - 2,
+            new_rows.total_size,
         )
 
     def watch__highlighted_row(self, new_row: int) -> None:

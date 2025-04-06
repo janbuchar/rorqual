@@ -20,7 +20,9 @@ class PasswordCommandSubsonicConfig(BaseSubsonicConfig):
 
     async def evaluate(self) -> SubsonicConfig:
         password_process = await asyncio.subprocess.create_subprocess_shell(
-            self.password_command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            self.password_command,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
         stdout, _ = await password_process.communicate()
         password = stdout.decode().strip()
@@ -53,4 +55,4 @@ class Config(BaseModel):
 
 
 class RawConfig(Config):
-    subsonic: SubsonicConfig | PasswordCommandSubsonicConfig # pyright: ignore [reportIncompatibleVariableOverride]
+    subsonic: SubsonicConfig | PasswordCommandSubsonicConfig  # pyright: ignore [reportIncompatibleVariableOverride]
