@@ -1,11 +1,10 @@
 import asyncio
 from datetime import datetime, timedelta
-from typing import Any, TypeVar, cast
-from mpris_server.enums import LoopStatus
-from typing_extensions import override
+from typing import Any, TypeVar, cast, override
 
 from mpris_server.adapters import MprisAdapter
-from mpris_server.base import PlayState, DbusObj, Microseconds, Track
+from mpris_server.base import DbusObj, Microseconds, PlayState, Track
+from mpris_server.enums import LoopStatus
 from mpris_server.events import EventAdapter
 from mpris_server.mpris.metadata import MetadataObj, ValidMetadata
 from mpris_server.server import Server
@@ -75,7 +74,7 @@ class RorqualMprisAdapter(MprisAdapter):
     @override
     def get_current_track(self) -> Track:
         metadata = cast(MetadataObj, self.metadata())
-        return Track(track_id=cast(DbusObj, metadata.track_id)) # pyright: ignore[reportUnknownMemberType]
+        return Track(track_id=cast(DbusObj, metadata.track_id))  # pyright: ignore[reportUnknownMemberType]
 
     @override
     def get_current_position(self) -> Microseconds:
@@ -172,14 +171,23 @@ class RorqualMprisAdapter(MprisAdapter):
     def can_edit_tracks(self) -> bool:
         return False
 
-T = TypeVar('T')
+
+T = TypeVar("T")
+
+
 def not_none(value: T | None) -> T:
     if value is None:
         raise ValueError("Received None")
     return value
 
+
 class RorqualEventAdapter(EventAdapter):
-    def __init__(self, subsonic: SubsonicPlayer, cover_manager: CoverManager, mpris_server: Server):
+    def __init__(
+        self,
+        subsonic: SubsonicPlayer,
+        cover_manager: CoverManager,
+        mpris_server: Server,
+    ):
         super().__init__(mpris_server.root, mpris_server.player, None, None)
 
         self.subsonic = subsonic

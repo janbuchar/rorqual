@@ -36,3 +36,37 @@ jobs:
         shell: bash
         run: |
           uv run basedpyright
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint check
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        shell: bash
+        run: |
+          sudo apt install -y libcairo2-dev libcairo2 libgirepository-2.0-dev gir1.2-glib-2.0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          uv sync
+
+      - name: Lint
+        shell: bash
+        run: |
+          uv run ruff check
+
+      - name: Check format
+        shell: bash
+        run: |
+          uv run ruff format --check

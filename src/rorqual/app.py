@@ -1,7 +1,8 @@
+from typing import override
+
 from textual import events, on
 from textual.app import App, ComposeResult
 from textual.containers import Vertical
-from typing_extensions import override
 
 from subsonic.subsonic_rest_api import Child
 
@@ -36,7 +37,12 @@ class RorqualApp(App[None]):
     }
     """
 
-    def __init__(self, subsonic: SubsonicClient, player: SubsonicPlayer, stream_manager: StreamManager) -> None:
+    def __init__(
+        self,
+        subsonic: SubsonicClient,
+        player: SubsonicPlayer,
+        stream_manager: StreamManager,
+    ) -> None:
         super().__init__()
         self.subsonic = subsonic
         self.player = player

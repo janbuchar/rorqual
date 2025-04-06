@@ -1,6 +1,7 @@
 import asyncio
 from collections import deque
-from typing import Iterable, Literal, NoReturn, TypeAlias, cast
+from collections.abc import Iterable
+from typing import Literal, NoReturn, cast
 from weakref import WeakValueDictionary
 
 from .caching import BlobCache
@@ -8,8 +9,8 @@ from .callbacks import CallbackList
 from .config import PrefetchingConfig
 from .subsonic_client import Buffer, SubsonicClient
 
-FetchingState = Literal["pending", "fetching", "done"]
-StreamId: TypeAlias = str
+type FetchingState = Literal["pending", "fetching", "done"]
+type StreamId = str
 
 
 class StreamManager:
@@ -75,7 +76,7 @@ class StreamManager:
                     continue
 
                 self.fetching_state_callbacks(id, "pending")
-                if not id in self._queue:
+                if id not in self._queue:
                     self._queue.append(id)
 
             self._queue_condition.notify_all()

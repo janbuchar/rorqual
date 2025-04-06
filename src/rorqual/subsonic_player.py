@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any, Literal, Sequence, cast
+from collections.abc import Sequence
+from typing import Any, Literal, cast
 
 import httpx
 from mpv import MPV, MpvEvent, MpvEventID
@@ -29,7 +30,10 @@ class SubsonicPlayer:
         self._playlist = list[Child]()
         self._playlist_position: int | None = None
 
-        self._mpv = MPV(audio_client_name="rorqual", title="${?media-title:${media-title}}${!media-title:No file}")
+        self._mpv = MPV(
+            audio_client_name="rorqual",
+            title="${?media-title:${media-title}}${!media-title:No file}",
+        )
         self._mpv.register_stream_protocol(self.PROTOCOL, self._open)
         self._mpv.register_event_callback(self.handle_event)
         self._mpv.observe_property("time-pos", self.dummy_property_handler)
@@ -44,7 +48,8 @@ class SubsonicPlayer:
             raise ValueError("Unsupported protocol")
 
         return SubsonicStreamFrontend(
-            asyncio.run_coroutine_threadsafe(self._streams.fetch(parsed_url.host), self._loop).result(), self._loop
+            asyncio.run_coroutine_threadsafe(self._streams.fetch(parsed_url.host), self._loop).result(),
+            self._loop,
         )
 
     def _url(self, track: Child) -> str:

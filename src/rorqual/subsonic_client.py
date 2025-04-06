@@ -3,16 +3,21 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import secrets
+from collections.abc import AsyncGenerator, Generator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, BinaryIO, Generator
-from typing_extensions import Self
+from typing import BinaryIO, Self
 
 import httpx
 from more_itertools import flatten
 from xsdata.formats.dataclass.context import XmlContext
 from xsdata.formats.dataclass.parsers import XmlParser
 
-from subsonic.subsonic_rest_api import AlbumId3, AlbumWithSongsId3, ArtistId3, SubsonicResponse
+from subsonic.subsonic_rest_api import (
+    AlbumId3,
+    AlbumWithSongsId3,
+    ArtistId3,
+    SubsonicResponse,
+)
 
 from .config import SubsonicConfig
 
