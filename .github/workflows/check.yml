@@ -3,6 +3,8 @@ name: Run code checks
 on:
   pull_request:
   push:
+    branches:
+      - master
 
 jobs:
   type_check:
