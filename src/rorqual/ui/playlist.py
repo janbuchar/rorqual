@@ -57,7 +57,7 @@ class Playlist(ScrollView, can_focus=True):
         ("k", "up", "Up"),
         ("g", "go_to_top", "Go to top"),
         ("G", "go_to_bottom", "Go to bottom"),
-        ("space", "toggle", "Play/Pause"),
+        ("space", "toggle_play", "Play/Pause"),
         ("enter", "play", "Play"),
         ("c", "clear", "Clear playlist"),
     ]
@@ -247,7 +247,7 @@ class Playlist(ScrollView, can_focus=True):
     def action_go_to_bottom(self) -> None:
         self._highlighted_row = len(self.tracks) - 1
 
-    def action_toggle(self) -> None:
+    def action_toggle_play(self) -> None:
         self.post_message(self.PlayPause())
 
     async def action_play(self) -> None:

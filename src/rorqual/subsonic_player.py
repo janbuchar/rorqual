@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Literal, Sequence, cast
+from typing import Any, Literal, Sequence, cast
 
 import httpx
 from mpv import MPV, MpvEvent, MpvEventID
@@ -57,7 +57,7 @@ class SubsonicPlayer:
     def playlist_clear(self) -> None:
         self.stop()
         self._mpv.playlist_clear()
-        self._playlist = []
+        self._playlist = list[Child]()
         self._playlist_position = None
         self.playlist_content_callbacks(self._playlist)
 
@@ -94,7 +94,7 @@ class SubsonicPlayer:
     def playback_state(self) -> PlaybackState:
         if self.playlist_position is None:
             return "stopped"
-        if self._mpv.pause:
+        if self._mpv.pause:  # pyright: ignore[reportUnknownMemberType]
             return "paused"
 
         return "playing"
@@ -156,7 +156,7 @@ class SubsonicPlayer:
                             self._playlist_position = None
                     self.playlist_position_callbacks(self._playlist_position)
 
-    def dummy_property_handler(self, *args) -> None:
+    def dummy_property_handler(self, *args: Any) -> None:
         pass
 
 
@@ -175,7 +175,7 @@ class SubsonicStreamFrontend:
             return None
         return len(self.buffer.data)
 
-    def read(self, size: int) -> bytes:
+    def read(self, size: int) -> bytearray:
         return asyncio.run_coroutine_threadsafe(self.buffer.read(size), self.loop).result()
 
     def seek(self, pos: int) -> int:

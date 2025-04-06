@@ -7,22 +7,25 @@ use_parentheses = true
 multi_line_output = 3
 include_trailing_comma = true
 
-[tool.pyright]
-pythonVersion = "3.11"
+[tool.basedpyright]
+pythonVersion = "3.13"
+typeCheckingMode = "standard"
+reportMissingTypeStubs = false
+ignore = ["src/subsonic"]
 
 [tool.poetry]
 name = "rorqual"
 version = "0.0.1"
 description = "A TUI Subsonic client"
 authors = [ "Jan Buchar <rorqual@bucharjan.cz>" ]
-packages = [ { include = "rorqual" }, { include = "subsonic" } ]
+packages = [ { include = "rorqual", from = "src" }, { include = "subsonic", from = "src" } ]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
+python = ">=3.12,<3.14"
 httpx = "^0.24.0"
 lxml = "^4.9.2"
 more-itertools = "^9.1.0"
-mpris-server = "^0.4.2"
+mpris-server = "^0.9.6"
 mpv = "^1.0.6"
 textual = "^0.58.1"
 tomli = "^2.0.1"
@@ -38,3 +41,4 @@ textual = { version = "^0.58.1", extras = [ "dev" ] }
 black = "^23.3.0"
 isort = "^5.12.0"
 git-cliff = "^2.2.2"
+basedpyright = "^1.28.4"

@@ -4,5 +4,6 @@ Session.vim
 .direnv
 .venv
 .mise.toml
+mise.toml
 __pycache__
 dist

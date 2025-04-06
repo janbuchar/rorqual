@@ -1,3 +1,4 @@
+from typing import Any
 from textual.app import ComposeResult
 from textual.containers import Container
 from textual.message import Message
@@ -89,17 +90,17 @@ class AlbumTree(Widget):
         self.query_one(Tree).action_scroll_end()
 
     def action_expand(self) -> None:
-        tree = self.query_one(Tree)
+        tree = self.query_one(Tree[Any])
         if tree.cursor_node:
             tree.cursor_node.expand()
 
     def action_collapse(self) -> None:
-        tree = self.query_one(Tree)
+        tree = self.query_one(Tree[Any])
         if tree.cursor_node:
             tree.cursor_node.collapse()
 
     async def action_add_to_playlist(self) -> None:
-        node = self.query_one(Tree).cursor_node
+        node = self.query_one(Tree[Any]).cursor_node
 
         if node and isinstance(node.data, AlbumId3):
             album = await self.subsonic.get_album_details(node.data.id)
