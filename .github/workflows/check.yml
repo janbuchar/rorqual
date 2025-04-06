@@ -17,15 +17,15 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install Poetry
-        uses: abatilo/actions-poetry@v2
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Install dependencies
         shell: bash
         run: |
-          poetry install
+          uv sync
 
       - name: Run type check
         shell: bash
         run: |
-          poetry run basedpyright
+          uv run basedpyright
