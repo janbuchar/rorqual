@@ -53,4 +53,4 @@ class Config(BaseModel):
 
 
 class RawConfig(Config):
-    subsonic: SubsonicConfig | PasswordCommandSubsonicConfig
+    subsonic: SubsonicConfig | PasswordCommandSubsonicConfig # pyright: ignore [reportIncompatibleVariableOverride]

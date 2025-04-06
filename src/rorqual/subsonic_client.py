@@ -4,7 +4,8 @@ import asyncio
 import hashlib
 import secrets
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, BinaryIO, Generator, Self
+from typing import AsyncGenerator, BinaryIO, Generator
+from typing_extensions import Self
 
 import httpx
 from more_itertools import flatten
@@ -111,7 +112,7 @@ class Buffer:
         self.bytes_written += len(data)
         self.data_written.set()
 
-    async def read(self, size: int) -> bytes:
+    async def read(self, size: int) -> bytearray:
         await self.started.wait()
         requested_pos = min(self.cursor + size, len(self.data))
 

@@ -94,11 +94,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-      - name: Install Poetry
-        uses: abatilo/actions-poetry@v2
+          python-version: "3.13"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
       - name: Use cache
         uses: actions/cache@v4
         with:
@@ -108,7 +108,7 @@ jobs:
         run: mkdir -p out
       - name: Create requirements.txt
         run: |
-          poetry export -f requirements.txt --without-hashes --without dev -o out/requirements.txt
+          uv export --format requirements-txt --no-hashes --no-dev -o out/requirements.txt
           cat out/requirements.txt
       - name: Copy launcher
         run: cp aur/rorqual out/rorqual

@@ -1,0 +1,38 @@
+name: Run code checks
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  type_check:
+    runs-on: ubuntu-latest
+    name: Type check
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        shell: bash
+        run: |
+          sudo apt install -y libcairo2-dev libcairo2 libgirepository-2.0-dev gir1.2-glib-2.0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          uv sync
+
+      - name: Run type check
+        shell: bash
+        run: |
+          uv run basedpyright
