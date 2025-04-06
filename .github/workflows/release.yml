@@ -6,6 +6,7 @@ on:
 
 env:
   PR_BRANCH: release-ci-${{ github.sha }}
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
 
@@ -73,7 +74,6 @@ jobs:
     env:
       TARBALL_URL: https://github.com/janbuchar/rorqual/archive/refs/tags/release-${{ needs.gh_release.outputs.release_number }}.tar.gz
       RELEASE_NUMBER: ${{ needs.gh_release.outputs.release_number }}
-      GH_TOKEN: ${{ secrets.PERSONAL_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
