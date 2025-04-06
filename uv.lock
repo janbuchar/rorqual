@@ -406,7 +406,7 @@ requires-dist = [
     { name = "textual", specifier = ">=0.58.1,<0.59" },
     { name = "tomli", specifier = ">=2.0.1,<3" },
     { name = "typer", specifier = ">=0.7.0,<0.8" },
-    { name = "xsdata", specifier = "~=22.12" },
+    { name = "xsdata", specifier = "~=24.12" },
 ]
 
 [package.metadata.requires-dev]
@@ -576,9 +576,12 @@ wheels = [
 
 [[package]]
 name = "xsdata"
-version = "22.12"
+version = "24.12"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/20/13/0de81fd3e39c1c45125e5b79f8731f32b0a6d7556959a9a1aa87bcc43624/xsdata-22.12.tar.gz", hash = "sha256:a3d5f1b7b6fff8c916f7825c836ea285a4e7d3f3a94dcbbed0e63ba15dc94466", size = 294422 }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/29/82/c2b73724bdd31f81e263e1f87e4b9bd70703dd4282ce44ffe1978cda541b/xsdata-24.12.tar.gz", hash = "sha256:67c16c032bbde82c064f6c28cdf6b4f8adcbd0498e2668a346ff8e52a3a200b4", size = 343596 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dd/97/e233dd078571fac9362e795fb73b0e4f9ec32c8a6f31eda984611c66dbde/xsdata-22.12-py3-none-any.whl", hash = "sha256:981755b69148fe954c46f4f6eb12f441e915df403ba86b21165e444667970cc1", size = 185733 },
+    { url = "https://files.pythonhosted.org/packages/0c/e5/70026869f5ab3c6be413ab5a978849cfe2037f2e82bd1da8550c7627caa3/xsdata-24.12-py3-none-any.whl", hash = "sha256:2656cfa7240d215a4f2ff30abeebee9afad1e72b805f3ed29ded518a7d3785ee", size = 232617 },
 ]
