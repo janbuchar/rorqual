@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## Release 5 - 2025-04-06
+
+### 🐛 Bug Fixes
+
+- Reset cursor on clear playlist (#18)
+
+### ⚙️ Miscellaneous Tasks
+
+- Update tools and dependencies, add type check to CI (#15)
+- Update Arch linux launcher script (#17)
+- Use ruff (#16)
+
 ## Release 4 - 2024-05-16
 
 ### 📚 Documentation
@@ -11,7 +23,6 @@ All notable changes to this project will be documented in this file.
 ### ⚙️ Miscellaneous Tasks
 
 - Extend .gitignore
-- Update changelog on release
 
 ## Release 3 - 2024-05-10
 
@@ -25,7 +36,6 @@ All notable changes to this project will be documented in this file.
 
 ### ⚙️ Miscellaneous Tasks
 
-- Determine release number automatically
 - Update textual
 
 ## Release 2 - 2024-05-09
