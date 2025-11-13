@@ -175,7 +175,7 @@ class RorqualMprisAdapter(MprisAdapter):
 T = TypeVar("T")
 
 
-def not_none(value: T | None) -> T:
+def not_none[T](value: T | None) -> T:
     if value is None:
         raise ValueError("Received None")
     return value
