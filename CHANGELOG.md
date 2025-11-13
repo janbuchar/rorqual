@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## Release 6 - 2025-11-13
+
+### 🐛 Bug Fixes
+
+- Do not crash on unknown properties (#26)
+
+### ⚙️ Miscellaneous Tasks
+
+- Update Pydantic (#24)
+- Update Textual (#25)
+
 ## Release 5 - 2025-04-06
 
 ### 🐛 Bug Fixes

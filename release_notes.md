@@ -1,12 +1,11 @@
-## Release 5 - 2025-04-06
+## Release 6 - 2025-11-13
 
 ### 🐛 Bug Fixes
 
-- Reset cursor on clear playlist (#18)
+- Do not crash on unknown properties (#26)
 
 ### ⚙️ Miscellaneous Tasks
 
-- Update tools and dependencies, add type check to CI (#15)
-- Update Arch linux launcher script (#17)
-- Use ruff (#16)
+- Update Pydantic (#24)
+- Update Textual (#25)
 
