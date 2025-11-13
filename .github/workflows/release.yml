@@ -32,7 +32,7 @@ jobs:
             head -n 1) )) >> "$GITHUB_OUTPUT"
 
       - name: Update changelog
-        uses: orhun/git-cliff-action@v3
+        uses: orhun/git-cliff-action@v4.6.0
         with:
           config: cliff.toml
           args: --tag "release-${{ steps.determine_number.outputs.release_number }}"
@@ -40,7 +40,7 @@ jobs:
           OUTPUT: CHANGELOG.md
 
       - name: Generate release notes
-        uses: orhun/git-cliff-action@v3
+        uses: orhun/git-cliff-action@v4.6.0
         with:
           config: cliff.toml
           args: --tag "release-${{ steps.determine_number.outputs.release_number }}" --unreleased --strip all
