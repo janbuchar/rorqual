@@ -69,6 +69,8 @@ class RorqualApp(App[None]):
 
     @on(events.Mount)
     async def initialize(self) -> None:
+        self.theme = "nord"
+
         self.player.time_position_callbacks.register(self.handle_time_pos_updated)
         self.player.playlist_content_callbacks.register(self.handle_playlist_content_change)
         self.player.playback_state_callbacks.register(self.handle_playback_state_change)

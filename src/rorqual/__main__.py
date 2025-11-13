@@ -1,15 +1,13 @@
 import asyncio
 import os
 from threading import Thread
+from typing import Annotated
 from uuid import uuid4
 
-import textual.app
 import typer
 from mpris_server.server import Server
 from setproctitle import setproctitle
 from textual.features import FeatureFlag
-
-from rorqual.ui.themes import THEMES
 
 from .app import RorqualApp
 from .config import Config
@@ -20,7 +18,7 @@ from .subsonic_client import SubsonicClient
 from .subsonic_player import SubsonicPlayer
 
 
-def main(dev: bool = False):
+def main(dev: Annotated[bool, typer.Option("--dev")] = False):
     features = set[FeatureFlag]()
     if dev:
         features = features.union({"debug", "devtools"})
@@ -31,7 +29,6 @@ def main(dev: bool = False):
 
     async def run_rorqual():
         config = await Config.from_file()
-        textual.app.DEFAULT_COLORS = THEMES["nord"]
 
         async with SubsonicClient.create(config.subsonic) as subsonic:
             stream_manager = StreamManager(subsonic, config.prefetching)
