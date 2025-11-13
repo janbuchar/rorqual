@@ -11,6 +11,7 @@ import httpx
 from more_itertools import flatten
 from xsdata.formats.dataclass.context import XmlContext
 from xsdata.formats.dataclass.parsers import XmlParser
+from xsdata.formats.dataclass.parsers.config import ParserConfig
 
 from subsonic.subsonic_rest_api import (
     AlbumId3,
@@ -48,7 +49,10 @@ class SubsonicClient:
     def __init__(self, client: httpx.AsyncClient, config: SubsonicConfig) -> None:
         self.client = client
         self.config = config
-        self.parser = XmlParser(context=XmlContext())
+        self.parser = XmlParser(
+            config=ParserConfig(fail_on_unknown_properties=False),
+            context=XmlContext(),
+        )
 
     @classmethod
     @asynccontextmanager
