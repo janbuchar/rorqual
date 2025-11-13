@@ -1,10 +1,10 @@
 from collections.abc import Callable
-from typing import Any, Generic, ParamSpec
+from typing import Any, ParamSpec
 
 TArgs = ParamSpec("TArgs")
 
 
-class CallbackList(Generic[TArgs]):
+class CallbackList[**TArgs]:
     def __init__(self) -> None:
         self.callbacks = list[Callable[TArgs, Any]]()
 

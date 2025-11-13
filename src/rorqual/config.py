@@ -26,7 +26,7 @@ class PasswordCommandSubsonicConfig(BaseSubsonicConfig):
         )
         stdout, _ = await password_process.communicate()
         password = stdout.decode().strip()
-        return SubsonicConfig.parse_obj(self.dict() | {"password": password})
+        return SubsonicConfig.model_validate(self.model_dump() | {"password": password})
 
 
 class PrefetchingConfig(BaseModel):
@@ -42,10 +42,10 @@ class Config(BaseModel):
     async def from_file(cls) -> "Config":
         with (Path(user_config_dir("rorqual")) / "config.toml").open("rb") as file:
             config = tomli.load(file)
-            parsed = RawConfig.parse_obj(config)
+            parsed = RawConfig.model_validate(config)
 
-        return Config.parse_obj(
-            parsed.dict()
+        return Config.model_validate(
+            parsed.model_dump()
             | {
                 "subsonic": await parsed.subsonic.evaluate()
                 if isinstance(parsed.subsonic, PasswordCommandSubsonicConfig)
