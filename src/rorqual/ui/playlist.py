@@ -4,14 +4,14 @@ from typing import cast, override
 
 from more_itertools import interleave_longest
 from rich.emoji import Emoji
-from rich.segment import Segment
-from rich.style import Style
 from textual import events, on
+from textual.content import Content
 from textual.geometry import Region, Size
 from textual.message import Message
 from textual.reactive import reactive
 from textual.scroll_view import ScrollView
 from textual.strip import Strip
+from textual.visual import Visual
 
 from rorqual.media_library import MediaLibrary
 from rorqual.stream_manager import FetchingState, StreamManager
@@ -102,6 +102,9 @@ class Playlist(ScrollView, can_focus=True):
     }
     """
 
+    def _content_width_for(self, total_rows: int) -> int:
+        return self.size.width if total_rows < self.size.height else self.size.width - 2
+
     class TrackSelected(Message):
         def __init__(self, track_index: int, track: Child) -> None:
             super().__init__()
@@ -138,84 +141,86 @@ class Playlist(ScrollView, can_focus=True):
             scroll_x, scroll_x + self.size.width
         )
 
+    def _content_to_strip(self, content: Content, width: int, component_class: str = "") -> Strip:
+        base_style = self.get_visual_style(component_class) if component_class else self.visual_style
+        strips = Visual.to_strips(self, content, width, 1, base_style)
+        return strips[0] if strips else Strip.blank(width)
+
     def album_strip(self, album: AlbumId3, tracks: list[Child]) -> Strip:
         album_duration = sum(track.duration or 0 for track in tracks)
-        style = self.get_component_styles("album-strip").rich_style
 
-        max_width = self.size.width if self._playlist_rows.total_size < self.size.height else self.size.width - 2
-        segments = [
+        max_width = self._content_width_for(self._playlist_rows.total_size)
+        cols = [
             f"[{album.year}]",
             f"{album.artist} - {album.name}",
             duration(album_duration),
         ]
-        available_space = max(1, max_width - len(segments) - sum(len(segment) for segment in segments))
+        available_space = max(1, max_width - len(cols) - sum(len(col) for col in cols))
 
-        return Strip(
-            [
-                Segment(" ", style=style),
-                Segment(segments[0], style=style),
-                Segment(" ", style=style),
-                Segment(segments[1], style=style),
-                Segment(" " * available_space, style=style),
-                Segment(segments[2], style=style),
-                Segment(" ", style=style),
-            ],
+        content = Content.assemble(
+            " ",
+            cols[0],
+            " ",
+            cols[1],
+            " " * available_space,
+            cols[2],
+            " ",
         )
 
+        return self._content_to_strip(content, max_width, "album-strip")
+
     def track_strip(self, track: Child, track_index: int) -> Strip:
-        strip_style = Style()
-        icon_style = Style()
+        row_class = ""
         is_highlighted = track_index == self._highlighted_row
 
         if is_highlighted:
-            strip_style = self.get_component_styles("highlighted-row").rich_style
+            row_class = "highlighted-row"
 
         if track_index == self.track_index:
-            strip_style = self.get_component_styles("active-row").rich_style
+            row_class = "active-row"
 
             if self.playback_state == "playing":
-                icon = Emoji("play_button")
+                icon = str(Emoji("play_button"))
             elif self.playback_state == "paused":
-                icon = Emoji("pause_button")
+                icon = str(Emoji("pause_button"))
             else:
                 icon = ""
+            icon_style = ""
         else:
             fetch_state = self._fetching_state.get(track.id, "pending")
-            icon_style = self.get_component_styles(
-                "fetch-status-icon" if not is_highlighted else "fetch-status-icon-highlighted"
-            ).rich_style
+            icon_style = ".fetch-status-icon" if not is_highlighted else ".fetch-status-icon-highlighted"
 
             if fetch_state == "pending":
-                icon = Emoji("stopwatch")
+                icon = str(Emoji("stopwatch"))
             elif fetch_state == "fetching":
-                icon = Emoji("down_arrow")
+                icon = str(Emoji("down_arrow"))
             elif fetch_state == "done":
-                icon = Emoji("heavy_check_mark")
+                icon = str(Emoji("heavy_check_mark"))
             else:
                 icon = ""
 
-        max_width = self.size.width if self._playlist_rows.total_size < self.size.height else self.size.width - 2
-        segments = [
-            str(icon),
+        max_width = self._content_width_for(self._playlist_rows.total_size)
+        cols = [
+            icon,
             f"{track.track or '':3}",
             track.title,
             duration(track.duration or 0),
         ]
-        available_space = max(1, max_width - len(segments) - sum(len(segment) for segment in segments))
+        available_space = max(1, max_width - len(cols) - sum(len(col) for col in cols))
 
-        return Strip(
-            [
-                Segment(" ", style=strip_style),
-                Segment(segments[0], style=strip_style + icon_style),
-                Segment(" ", style=strip_style),
-                Segment(segments[1], style=strip_style),
-                Segment(" ", style=strip_style),
-                Segment(segments[2], style=strip_style),
-                Segment(" " * available_space, style=strip_style),
-                Segment(segments[3], style=strip_style),
-                Segment(" ", style=strip_style),
-            ]
+        content = Content.assemble(
+            " ",
+            (cols[0], icon_style) if icon_style else cols[0],
+            " ",
+            cols[1],
+            " ",
+            cols[2],
+            " " * available_space,
+            cols[3],
+            " ",
         )
+
+        return self._content_to_strip(content, max_width, row_class)
 
     @on(events.Mount)
     def register_fetching_callbacks(self) -> None:
@@ -234,10 +239,7 @@ class Playlist(ScrollView, can_focus=True):
         return result
 
     def watch__playlist_rows(self, new_rows: PlaylistRows) -> None:
-        self.virtual_size = Size(
-            self.size.width if new_rows.total_size < self.size.height else self.size.width - 2,
-            new_rows.total_size,
-        )
+        self.virtual_size = Size(self._content_width_for(new_rows.total_size), new_rows.total_size)
 
     def watch__highlighted_row(self, new_row: int) -> None:
         new_row += self._playlist_rows.sublist_index(new_row) or 0
