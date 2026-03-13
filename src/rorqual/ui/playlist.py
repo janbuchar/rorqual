@@ -140,7 +140,7 @@ class Playlist(ScrollView, can_focus=True):
 
     def album_strip(self, album: AlbumId3, tracks: list[Child]) -> Strip:
         album_duration = sum(track.duration or 0 for track in tracks)
-        style = self.get_component_styles("album-strip").rich_style
+        style = self.get_component_rich_style("album-strip")
 
         max_width = self.size.width if self._playlist_rows.total_size < self.size.height else self.size.width - 2
         segments = [
@@ -168,10 +168,10 @@ class Playlist(ScrollView, can_focus=True):
         is_highlighted = track_index == self._highlighted_row
 
         if is_highlighted:
-            strip_style = self.get_component_styles("highlighted-row").rich_style
+            strip_style = self.get_component_rich_style("highlighted-row")
 
         if track_index == self.track_index:
-            strip_style = self.get_component_styles("active-row").rich_style
+            strip_style = self.get_component_rich_style("active-row")
 
             if self.playback_state == "playing":
                 icon = Emoji("play_button")
@@ -181,9 +181,9 @@ class Playlist(ScrollView, can_focus=True):
                 icon = ""
         else:
             fetch_state = self._fetching_state.get(track.id, "pending")
-            icon_style = self.get_component_styles(
+            icon_style = self.get_component_rich_style(
                 "fetch-status-icon" if not is_highlighted else "fetch-status-icon-highlighted"
-            ).rich_style
+            )
 
             if fetch_state == "pending":
                 icon = Emoji("stopwatch")
