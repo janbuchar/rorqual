@@ -1,11 +1,10 @@
-## Release 6 - 2025-11-13
+## Release 7 - 2026-03-23
 
-### 🐛 Bug Fixes
+### 🚜 Refactor
 
-- Do not crash on unknown properties (#26)
+- Improve textual usage (#31)
 
 ### ⚙️ Miscellaneous Tasks
 
-- Update Pydantic (#24)
-- Update Textual (#25)
+- Update dependencies (#30)
 

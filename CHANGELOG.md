@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## Release 7 - 2026-03-23
+
+### 🚜 Refactor
+
+- Improve textual usage (#31)
+
+### ⚙️ Miscellaneous Tasks
+
+- Update dependencies (#30)
+
 ## Release 6 - 2025-11-13
 
 ### 🐛 Bug Fixes
