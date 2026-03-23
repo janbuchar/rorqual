@@ -17,7 +17,7 @@ jobs:
       - name: Install system dependencies
         shell: bash
         run: |
-          sudo apt install -y libcairo2-dev libcairo2 libgirepository-2.0-dev gir1.2-glib-2.0
+          sudo apt update && sudo apt install -y libcairo2-dev libcairo2 libgirepository-2.0-dev gir1.2-glib-2.0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -46,7 +46,7 @@ jobs:
       - name: Install system dependencies
         shell: bash
         run: |
-          sudo apt install -y libcairo2-dev libcairo2 libgirepository-2.0-dev gir1.2-glib-2.0
+          sudo apt update && sudo apt install -y libcairo2-dev libcairo2 libgirepository-2.0-dev gir1.2-glib-2.0
 
       - name: Set up Python
         uses: actions/setup-python@v5
