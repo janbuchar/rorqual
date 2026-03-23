@@ -3,7 +3,7 @@ name = "rorqual"
 version = "0.0.1"
 description = "A TUI Subsonic client"
 authors = [{ name = "Jan Buchar", email = "rorqual@bucharjan.cz" }]
-requires-python = ">=3.12,<3.14"
+requires-python = ">=3.12,<3.15"
 dependencies = [
     "httpx>=0.24.0,<0.29",
     "lxml>=5.3.2,<7",
