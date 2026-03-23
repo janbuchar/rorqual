@@ -1,10 +1,7 @@
-## Release 7 - 2026-03-23
-
-### 🚜 Refactor
-
-- Improve textual usage (#31)
+## Release 8 - 2026-03-23
 
 ### ⚙️ Miscellaneous Tasks
 
-- Update dependencies (#30)
+- Allow Python 3.14
+- Update actions
 

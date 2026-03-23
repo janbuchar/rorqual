@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## Release 8 - 2026-03-23
+
+### ⚙️ Miscellaneous Tasks
+
+- Allow Python 3.14
+- Update actions
+
 ## Release 7 - 2026-03-23
 
 ### 🚜 Refactor
