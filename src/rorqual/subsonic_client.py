@@ -95,6 +95,13 @@ class SubsonicClient:
 
     async def stream(self, song_id: str, buffer: Buffer) -> None:
         async with self.client.stream("GET", "/rest/stream", params=httpx.QueryParams({"id": song_id})) as response:
+            # On failure, Subsonic serves an XML document in place of the audio data, often with a 200 status
+            content_type = response.headers.get("content-type", "")
+            if not response.is_success or content_type.startswith(("text/xml", "application/xml")):
+                buffer.allocate(0)
+                buffer.finalize()
+                return
+
             buffer.allocate(int(response.headers["content-length"]))
             try:
                 async for chunk in response.aiter_raw():
@@ -120,6 +127,10 @@ class Buffer:
         self.data[self.bytes_written : self.bytes_written + len(data)] = data
         self.bytes_written += len(data)
         self.data_written.set()
+
+    @property
+    def complete(self) -> bool:
+        return 0 < self.bytes_written == len(self.data)
 
     async def read(self, size: int) -> bytearray:
         await self.started.wait()

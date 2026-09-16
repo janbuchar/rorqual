@@ -196,6 +196,8 @@ class Playlist(ScrollView, can_focus=True):
                 icon = str(Emoji("down_arrow"))
             elif fetch_state == "done":
                 icon = str(Emoji("heavy_check_mark"))
+            elif fetch_state == "failed":
+                icon = str(Emoji("heavy_multiplication_x"))
             else:
                 icon = ""
 
