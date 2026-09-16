@@ -1,7 +1,7 @@
-## Release 8 - 2026-03-23
+## Release 9 - 2026-09-16
 
-### ⚙️ Miscellaneous Tasks
+### 🐛 Bug Fixes
 
-- Allow Python 3.14
-- Update actions
+- *(aur)* Switched AUR launcher to venv python and forwarded arguments
+- Handle failed downloads correctly
 
