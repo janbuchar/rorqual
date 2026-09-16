@@ -9,7 +9,7 @@ from .callbacks import CallbackList
 from .config import PrefetchingConfig
 from .subsonic_client import Buffer, SubsonicClient
 
-type FetchingState = Literal["pending", "fetching", "done"]
+type FetchingState = Literal["pending", "fetching", "done", "failed"]
 type StreamId = str
 
 
@@ -44,8 +44,12 @@ class StreamManager:
 
             self.fetching_state_callbacks(id, "fetching")
             await self._subsonic.stream(id, buffer)
-            self.fetching_state_callbacks(id, "done")
-            self._cache.store(id, self._buffers[id].data)
+
+            if buffer.complete:
+                self._cache.store(id, buffer.data)
+                self.fetching_state_callbacks(id, "done")
+            else:
+                self.fetching_state_callbacks(id, "failed")
 
             del self._task_streams[task]
 

@@ -4,7 +4,6 @@ import asyncio
 from collections.abc import Sequence
 from typing import Any, Literal, cast
 
-import httpx
 from mpv import MPV, MpvEvent, MpvEventID
 
 from subsonic.subsonic_rest_api import Child
@@ -42,13 +41,14 @@ class SubsonicPlayer:
         self._mpv.observe_property("playlist-current-pos", self.dummy_property_handler)
 
     def _open(self, url: str) -> SubsonicStreamFrontend:
-        parsed_url = httpx.URL(url)
+        # Parsed by hand: a URL parser lowercases the host, and song ids are case sensitive
+        scheme, separator, song_id = url.partition("://")
 
-        if parsed_url.scheme != self.PROTOCOL:
+        if scheme != self.PROTOCOL or not separator:
             raise ValueError("Unsupported protocol")
 
         return SubsonicStreamFrontend(
-            asyncio.run_coroutine_threadsafe(self._streams.fetch(parsed_url.host), self._loop).result(),
+            asyncio.run_coroutine_threadsafe(self._streams.fetch(song_id), self._loop).result(),
             self._loop,
         )
 
