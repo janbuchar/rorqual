@@ -1,16 +1,23 @@
 import asyncio
-from datetime import datetime, timedelta
-from typing import Any, TypeVar, cast, override
+from typing import cast, override
 
 from mpris_server.adapters import MprisAdapter
-from mpris_server.base import DbusObj, Microseconds, PlayState, Track
+from mpris_server.base import DbusObj, Microseconds, NoTrack, PlayState, Track
 from mpris_server.enums import LoopStatus
 from mpris_server.events import EventAdapter
-from mpris_server.mpris.metadata import MetadataObj, ValidMetadata
+from mpris_server.mpris.metadata import Metadata, MetadataObj, ValidMetadata, get_dbus_metadata
 from mpris_server.server import Server
 
+from subsonic.subsonic_rest_api import Child
+
 from .cover_manager import CoverManager
-from .subsonic_player import SubsonicPlayer
+from .subsonic_player import LoopMode, PlaybackState, SubsonicPlayer
+
+LOOP_STATUSES: dict[LoopStatus, LoopMode] = {
+    LoopStatus.NONE: "none",
+    LoopStatus.TRACK: "track",
+    LoopStatus.PLAYLIST: "playlist",
+}
 
 
 class RorqualMprisAdapter(MprisAdapter):
@@ -19,13 +26,6 @@ class RorqualMprisAdapter(MprisAdapter):
         self.player = player
         self.cover_manager = cover_manager
         self.loop = asyncio.get_running_loop()
-
-        self.time_position: float = 0
-
-        self.player.time_position_callbacks.register(self.on_time_position_change)
-
-    def on_time_position_change(self, position: float | None) -> None:
-        self.time_position = position or 0
 
     # RootAdapter
     @override
@@ -42,25 +42,29 @@ class RorqualMprisAdapter(MprisAdapter):
 
     @override
     def has_tracklist(self) -> bool:
-        return False
+        return True
 
     # PlayerAdapter
     @override
     def can_control(self) -> bool:
         return True
 
-    @override
-    def metadata(self) -> ValidMetadata:
-        if self.player.playlist_position is None or self.player.current_track is None:
-            return MetadataObj(track_id="/track/none")
+    def _track_id(self, position: int) -> DbusObj:
+        return cast(DbusObj, f"/track/{self.player.entry_ids[position]}")
 
-        track = self.player.current_track
+    def _position_of(self, track_id: DbusObj) -> int | None:
+        return next(
+            (position for position in range(len(self.player.playlist)) if self._track_id(position) == track_id), None
+        )
+
+    def _metadata(self, position: int) -> MetadataObj:
+        track = self.player.playlist[position]
         cover_url = self.cover_manager.get_cover_url(track)
         if cover_url is None:
             asyncio.run_coroutine_threadsafe(self.cover_manager.fetch_cover(track), self.loop)
 
         return MetadataObj(
-            track_id=f"/track/{self.player.playlist_position}",
+            track_id=self._track_id(position),
             length=(track.duration or 0) * 10**6,
             title=track.title,
             album=track.album,
@@ -72,13 +76,20 @@ class RorqualMprisAdapter(MprisAdapter):
         )
 
     @override
+    def metadata(self) -> ValidMetadata:
+        if self.player.playlist_position is None:
+            return MetadataObj(track_id=NoTrack)
+
+        return self._metadata(self.player.playlist_position)
+
+    @override
     def get_current_track(self) -> Track:
         metadata = cast(MetadataObj, self.metadata())
         return Track(track_id=cast(DbusObj, metadata.track_id))  # pyright: ignore[reportUnknownMemberType]
 
     @override
     def get_current_position(self) -> Microseconds:
-        return int(self.time_position * (10**6))
+        return int((self.player.time_position or 0) * 10**6)
 
     @override
     def get_playstate(self) -> PlayState:
@@ -108,7 +119,7 @@ class RorqualMprisAdapter(MprisAdapter):
 
     @override
     def can_play(self) -> bool:
-        return self.player.current_track is not None
+        return len(self.player.playlist) > 0
 
     @override
     def can_pause(self) -> bool:
@@ -128,10 +139,9 @@ class RorqualMprisAdapter(MprisAdapter):
     def stop(self) -> None:
         self.player.stop()
 
-    def play_pause(self) -> None:
-        if self.player.playback_state == "playing" or self.player.playback_state == "paused":
-            self.player.toggle_paused()
-        elif self.player.playback_state == "stopped" and len(self.player.playlist) > 0:
+    @override
+    def play(self) -> None:
+        if self.player.playback_state == "stopped" and self.player.playlist:
             self.player.play(0)
 
     @override
@@ -139,74 +149,78 @@ class RorqualMprisAdapter(MprisAdapter):
         return True
 
     @override
-    def seek(self, time: Microseconds, track_id: DbusObj | None = None):
-        pass
+    def seek(self, time: Microseconds, track_id: DbusObj | None = None) -> None:
+        if track_id is not None and track_id != self.get_current_track().track_id:
+            return
+
+        self.player.seek(time / 10**6)
 
     @override
     def is_repeating(self) -> bool:
-        return False
+        return self.player.loop_mode != "none"
 
     @override
     def set_repeating(self, value: bool) -> None:
-        pass
+        self.player.loop_mode = "playlist" if value else "none"
 
     @override
     def is_playlist(self) -> bool:
-        return False
+        return self.player.loop_mode == "playlist"
 
     @override
     def set_loop_status(self, value: LoopStatus) -> None:
-        pass
+        self.player.loop_mode = LOOP_STATUSES[value]
 
     @override
     def get_shuffle(self) -> bool:
-        return False
+        return self.player.shuffled
 
     @override
     def set_shuffle(self, value: bool) -> None:
-        pass
+        self.player.shuffled = value
 
     # TrackListAdapter
     @override
     def can_edit_tracks(self) -> bool:
         return False
 
+    @override
+    def get_tracks(self) -> list[DbusObj]:
+        return [self._track_id(position) for position in range(len(self.player.playlist))]
 
-T = TypeVar("T")
+    @override
+    def get_tracks_metadata(self, track_ids: list[DbusObj]) -> list[Metadata]:
+        positions = (self._position_of(track_id) for track_id in track_ids)
+        return [get_dbus_metadata(self._metadata(position)) for position in positions if position is not None]
 
-
-def not_none[T](value: T | None) -> T:
-    if value is None:
-        raise ValueError("Received None")
-    return value
+    @override
+    def go_to(self, track_id: DbusObj) -> None:
+        position = self._position_of(track_id)
+        if position is not None:
+            self.player.play(position)
 
 
 class RorqualEventAdapter(EventAdapter):
-    def __init__(
-        self,
-        subsonic: SubsonicPlayer,
-        cover_manager: CoverManager,
-        mpris_server: Server,
-    ):
-        super().__init__(mpris_server.root, mpris_server.player, None, None)
+    def __init__(self, adapter: RorqualMprisAdapter, mpris_server: Server):
+        super().__init__(mpris_server.root, mpris_server.player, None, mpris_server.tracklist)
 
-        self.subsonic = subsonic
-        self.subsonic.time_position_callbacks.register(self.time_position_callback)
-        self.subsonic.playback_state_callbacks.register(self.notify)
-        self.subsonic.playlist_position_callbacks.register(self.notify)
+        self.adapter = adapter
+        adapter.player.playback_state_callbacks.register(self.playback_state_changed)
+        adapter.player.playlist_position_callbacks.register(self.track_changed)
+        adapter.player.playlist_content_callbacks.register(self.playlist_changed)
+        adapter.player.seek_callbacks.register(self.seeked)
+        adapter.player.options_callbacks.register(self.on_options)
+        adapter.cover_manager.cover_fetched_callbacks.register(self.on_title)
 
-        self.cover_manager = cover_manager
-        self.cover_manager.cover_fetched_callbacks.register(self.notify)
-        self.last_position_change_emission = datetime.utcnow()
+    def playback_state_changed(self, _state: PlaybackState) -> None:
+        self.on_playpause()
 
-    def time_position_callback(self, time_position: float | None):
-        now = datetime.utcnow()
-        if self.last_position_change_emission and now - self.last_position_change_emission < timedelta(seconds=0.5):
-            return
+    def track_changed(self, _position: int | None) -> None:
+        self.on_playback()
+        self.on_options()
 
-        not_none(self.player).Seeked.emit((time_position or 0) * 10**6)
-        self.emit_player_changes(["Position"])
-        self.last_position_change_emission = now
+    def playlist_changed(self, _tracks: list[Child]) -> None:
+        self.on_list_replaced(self.adapter.get_tracks(), self.adapter.get_current_track().track_id)
 
-    def notify(self, *args: Any, **kwargs: Any) -> None:
-        self.on_player_all()
+    def seeked(self, position: float) -> None:
+        self.on_seek(int(position * 10**6))

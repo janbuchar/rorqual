@@ -98,7 +98,6 @@ class RorqualApp(App[None]):
     @on(Playlist.ClearPlaylist)
     def clear_playlist(self) -> None:
         self.player.playlist_clear()
-        self.playlist.track_index = None
 
     def handle_playlist_content_change(self, playlist: list[Child]) -> None:
         self.playlist.tracks = playlist
