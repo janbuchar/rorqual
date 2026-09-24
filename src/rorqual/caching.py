@@ -17,6 +17,11 @@ class BlobCache:
         self._recently_fetched.add(key)
         self._cleanup()
 
+    def discard(self, key: str) -> None:
+        self._recently_fetched.discard(key)
+        with suppress(OSError):
+            (self._root / key).unlink()
+
     def __contains__(self, key: str) -> bool:
         return (self._root / key).exists()
 

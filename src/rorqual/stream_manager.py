@@ -85,6 +85,11 @@ class StreamManager:
 
             self._queue_condition.notify_all()
 
+    def report_failure(self, id: StreamId) -> None:
+        """Whatever we served for this stream turned out to be unplayable, so don't keep serving it."""
+        self._cache.discard(id)
+        self.fetching_state_callbacks(id, "failed")
+
     def abort_all_streams(self) -> None:
         self._queue.clear()
         self._respawn_workers(keep_active=False)
