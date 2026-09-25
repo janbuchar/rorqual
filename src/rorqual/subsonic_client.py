@@ -62,8 +62,12 @@ class SubsonicClient:
         async with httpx.AsyncClient(base_url=base_url, auth=SubsonicAuth(config)) as client:
             yield cls(client, config)
 
-    async def request(self, method: str, path: str, **kwargs: str | int) -> SubsonicResponse:
-        params = httpx.QueryParams({k: str(v) for k, v in kwargs.items()}) if kwargs else None
+    async def request(self, method: str, path: str, **kwargs: str | int | bool) -> SubsonicResponse:
+        params = (
+            httpx.QueryParams({k: str(v).lower() if isinstance(v, bool) else str(v) for k, v in kwargs.items()})
+            if kwargs
+            else None
+        )
         response = await self.client.request(method, path, params=params)
 
         return self.parser.from_string(response.text, SubsonicResponse)
@@ -85,6 +89,9 @@ class SubsonicClient:
         assert album is not None
 
         return album
+
+    async def scrobble(self, song_id: str, *, submission: bool) -> None:
+        await self.request("GET", "/rest/scrobble", id=song_id, submission=submission)
 
     async def download_cover(self, cover_id: str, destination: BinaryIO) -> None:
         async with self.client.stream(

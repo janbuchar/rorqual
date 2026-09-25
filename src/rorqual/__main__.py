@@ -13,6 +13,7 @@ from .app import RorqualApp
 from .config import Config
 from .cover_manager import CoverManager
 from .mpris import RorqualEventAdapter, RorqualMprisAdapter
+from .scrobbler import Scrobbler
 from .stream_manager import StreamManager
 from .subsonic_client import SubsonicClient
 from .subsonic_player import SubsonicPlayer
@@ -34,6 +35,7 @@ def main(dev: Annotated[bool, typer.Option("--dev")] = False):
             stream_manager = StreamManager(subsonic, config.prefetching)
             cover_manager = CoverManager(subsonic)
             player = SubsonicPlayer(stream_manager, asyncio.get_running_loop())
+            Scrobbler(subsonic, player, asyncio.get_running_loop())
 
             mpris_adapter = RorqualMprisAdapter(player, cover_manager)
             mpris_server = Server(f"Rorqual-{uuid4()}", adapter=mpris_adapter)
