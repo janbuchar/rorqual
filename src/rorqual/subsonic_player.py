@@ -77,6 +77,8 @@ class SubsonicPlayer:
         entries = cast(list[dict[str, Any]], self._mpv.playlist)
         self._playlist = [self._tracks[str(entry["filename"]).removeprefix(f"{self.PROTOCOL}://")] for entry in entries]
         self._entry_ids = [int(entry["id"]) for entry in entries]
+        # The observer would catch up eventually, but content callbacks must never see a stale position
+        self._playlist_position = self._normalize_position(self._mpv.playlist_pos)
         self.playlist_content_callbacks(self._playlist)
 
     @property
@@ -209,8 +211,12 @@ class SubsonicPlayer:
         self._paused = paused
         self.playback_state_callbacks(self.playback_state)
 
+    @staticmethod
+    def _normalize_position(position: int | None) -> int | None:
+        return position if position is not None and position >= 0 else None
+
     def _handle_playlist_position(self, _name: str, position: int | None) -> None:
-        self._playlist_position = position if position is not None and position >= 0 else None
+        self._playlist_position = self._normalize_position(position)
         self.playlist_position_callbacks(self._playlist_position)
         self.playback_state_callbacks(self.playback_state)
 
