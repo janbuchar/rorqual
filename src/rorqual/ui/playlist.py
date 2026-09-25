@@ -13,7 +13,6 @@ from textual.scroll_view import ScrollView
 from textual.strip import Strip
 from textual.visual import Visual
 
-from rorqual.media_library import MediaLibrary
 from rorqual.stream_manager import FetchingState, StreamManager
 from rorqual.subsonic_player import PlaybackState
 from subsonic.subsonic_rest_api import AlbumId3, Child
@@ -41,7 +40,6 @@ class Playlist(ScrollView, can_focus=True):
     tracks = reactive(list[Child]())
     track_index = reactive[int | None](None)
     playback_state = reactive[PlaybackState]("stopped")
-    media_library = reactive[MediaLibrary | None](None)
 
     _highlighted_row = reactive[int](0)
     _playlist_rows = reactive[PlaylistRows](PlaylistRows())
@@ -51,6 +49,8 @@ class Playlist(ScrollView, can_focus=True):
 
         self._stream_manager = stream_manager
         self._fetching_state = dict[str, FetchingState]()
+        self.albums = dict[str, AlbumId3]()
+        """Albums of the tracks, to be registered before the tracks are added."""
 
         self.virtual_size = Size(self.size.width, 0)
 
@@ -234,9 +234,8 @@ class Playlist(ScrollView, can_focus=True):
     def compute__playlist_rows(self) -> PlaylistRows:
         result = PlaylistRows()
 
-        if self.media_library:
-            for album_id, tracks in groupby(self.tracks, lambda it: it.album_id):
-                result.append((self.media_library.albums[cast(str, album_id)], list(tracks)))
+        for album_id, tracks in groupby(self.tracks, lambda it: it.album_id):
+            result.append((self.albums[cast(str, album_id)], list(tracks)))
 
         return result
 
