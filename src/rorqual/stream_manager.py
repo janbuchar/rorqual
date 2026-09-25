@@ -90,6 +90,9 @@ class StreamManager:
         self._cache.discard(id)
         self.fetching_state_callbacks(id, "failed")
 
+    def cached_streams(self) -> set[StreamId]:
+        return self._cache.keys()
+
     def abort_all_streams(self) -> None:
         self._queue.clear()
         self._respawn_workers(keep_active=False)

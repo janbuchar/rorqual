@@ -38,7 +38,12 @@ class CoverManager:
             return
 
         path.parent.mkdir(parents=True, exist_ok=True)
-        with path.open("wb") as destination:
-            await self._subsonic.download_cover(subject.cover_art, destination)
+        try:
+            with path.open("wb") as destination:
+                await self._subsonic.download_cover(subject.cover_art, destination)
+        except BaseException:
+            # A leftover partial file would pass for a cached cover forever
+            path.unlink(missing_ok=True)
+            raise
 
         self.cover_fetched_callbacks()

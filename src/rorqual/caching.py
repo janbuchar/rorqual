@@ -25,6 +25,9 @@ class BlobCache:
     def __contains__(self, key: str) -> bool:
         return (self._root / key).exists()
 
+    def keys(self) -> set[str]:
+        return {path.name for path in self._root.iterdir()}
+
     def read(self, key: str) -> bytes | None:
         path = self._root / key
 
