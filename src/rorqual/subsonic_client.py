@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import secrets
-from collections.abc import AsyncGenerator, Generator
+from collections.abc import AsyncGenerator, Generator, Mapping
 from contextlib import asynccontextmanager
 from typing import BinaryIO, Self
 
@@ -28,6 +28,10 @@ from .config import SubsonicConfig
 
 class NotCached(Exception):
     """There's no cached response and the server was either not asked or not reachable."""
+
+
+def _query_params(kwargs: Mapping[str, str | int | bool]) -> httpx.QueryParams:
+    return httpx.QueryParams({k: str(v).lower() if isinstance(v, bool) else str(v) for k, v in kwargs.items()})
 
 
 class SubsonicAuth(httpx.Auth):
@@ -89,16 +93,15 @@ class SubsonicClient:
         self._set_online(True)
         return response.content
 
-    async def request(self, method: str, path: str, **kwargs: str | int) -> SubsonicResponse:
-        params = httpx.QueryParams({k: str(v) for k, v in kwargs.items()})
-        return self.parser.from_bytes(await self._send(method, path, params), SubsonicResponse)
+    async def request(self, method: str, path: str, **kwargs: str | int | bool) -> SubsonicResponse:
+        return self.parser.from_bytes(await self._send(method, path, _query_params(kwargs)), SubsonicResponse)
 
-    async def query(self, path: str, *, cache_only: bool = False, **kwargs: str | int) -> SubsonicResponse:
+    async def query(self, path: str, *, cache_only: bool = False, **kwargs: str | int | bool) -> SubsonicResponse:
         """
         A GET request whose last successful response is kept on disk and served when the server can't be reached.
         With `cache_only`, the server is not contacted at all.
         """
-        params = httpx.QueryParams({k: str(v) for k, v in kwargs.items()})
+        params = _query_params(kwargs)
         key = hashlib.sha256(f"{self.config.url}\0{self.config.user}\0{path}\0{params}".encode()).hexdigest()
 
         if cache_only:
@@ -138,6 +141,9 @@ class SubsonicClient:
         assert album is not None
 
         return album
+
+    async def scrobble(self, song_id: str, *, submission: bool) -> None:
+        await self.request("GET", "/rest/scrobble", id=song_id, submission=submission)
 
     async def download_cover(self, cover_id: str, destination: BinaryIO) -> None:
         async with self.client.stream(
