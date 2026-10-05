@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## Release 10 - 2026-10-05
+
+### 🚀 Features
+
+- Finalize MPRIS support (#33)
+- Scrobble listened tracks (#34)
+- Offline mode (#35)
+
+### 🐛 Bug Fixes
+
+- Prevent a race when clearing the playlist
+- Add missing cast
+
 ## Release 9 - 2026-09-16
 
 ### 🐛 Bug Fixes
