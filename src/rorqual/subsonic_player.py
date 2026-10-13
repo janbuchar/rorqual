@@ -57,6 +57,7 @@ class SubsonicPlayer:
         self._mpv.observe_property("pause", self._handle_pause)
         self._mpv.observe_property("playlist-pos", self._handle_playlist_position)
         self._mpv.register_event_callback(self._handle_end_file)
+        self._mpv.register_event_callback(self._handle_playback_restart)
 
     def _open(self, url: str) -> SubsonicStreamFrontend:
         # Parsed by hand: a URL parser lowercases the host, and song ids are case sensitive
@@ -198,7 +199,6 @@ class SubsonicPlayer:
             return
 
         self._mpv.seek(position, reference="absolute")
-        self.seek_callbacks(position)
 
     def stop(self) -> None:
         self._mpv.stop(keep_playlist=True)
@@ -219,6 +219,14 @@ class SubsonicPlayer:
         self._playlist_position = self._normalize_position(position)
         self.playlist_position_callbacks(self._playlist_position)
         self.playback_state_callbacks(self.playback_state)
+
+    def _handle_playback_restart(self, event: MpvEvent) -> None:
+        # Covers seeks, track loops and buffering at track start; time-pos can lag behind this event
+        if event.event_id.value != MpvEventID.PLAYBACK_RESTART:
+            return
+
+        self._time_position = self._mpv.time_pos  # pyright: ignore[reportUnknownMemberType]
+        self.seek_callbacks(self._time_position or 0)
 
     def _handle_end_file(self, event: MpvEvent) -> None:
         if event.event_id.value != MpvEventID.END_FILE:
