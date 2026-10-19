@@ -97,7 +97,11 @@ class RorqualApp(App[None]):
     @on(AlbumTree.AddAlbumToPlaylist)
     def add_album_to_playlist(self, message: AlbumTree.AddAlbumToPlaylist) -> None:
         self.playlist.albums[message.album.id] = message.album
+        start = len(self.player.playlist)
         self.player.playlist_append(message.album.song)
+
+        if self.player.playback_state == "stopped" and message.album.song:
+            self.player.play(start)
 
     @on(Playlist.TrackSelected)
     def select_track(self, message: Playlist.TrackSelected) -> None:
