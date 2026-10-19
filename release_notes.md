@@ -1,13 +1,11 @@
-## Release 10 - 2026-10-05
+## Release 11 - 2026-10-19
 
 ### 🚀 Features
 
-- Finalize MPRIS support (#33)
-- Scrobble listened tracks (#34)
-- Offline mode (#35)
+- Improved album list UX (#36)
 
 ### 🐛 Bug Fixes
 
-- Prevent a race when clearing the playlist
-- Add missing cast
+- Send playback position updates over MPRIS
+- Fix type error
 

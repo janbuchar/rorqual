@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## Release 11 - 2026-10-19
+
+### 🚀 Features
+
+- Improved album list UX (#36)
+
+### 🐛 Bug Fixes
+
+- Send playback position updates over MPRIS
+- Fix type error
+
 ## Release 10 - 2026-10-05
 
 ### 🚀 Features
