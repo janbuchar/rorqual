@@ -224,11 +224,18 @@ class Playlist(ScrollView, can_focus=True):
 
         return self._content_to_strip(content, max_width, row_class)
 
+    @override
+    def allow_focus(self) -> bool:
+        return bool(self.tracks)
+
     @on(events.Mount)
     def register_fetching_callbacks(self) -> None:
         self._stream_manager.fetching_state_callbacks.register(self.handle_fetch_state_change)
 
     async def watch_tracks(self, new_tracks: list[Child]) -> None:
+        if not new_tracks and self.has_focus:
+            self.screen.focus_next()
+
         await self._stream_manager.prefetch(track.id for track in new_tracks)
 
     def compute__playlist_rows(self) -> PlaylistRows:
