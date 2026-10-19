@@ -225,7 +225,7 @@ class SubsonicPlayer:
         if event.event_id.value != MpvEventID.PLAYBACK_RESTART:
             return
 
-        self._time_position = self._mpv.time_pos  # pyright: ignore[reportUnknownMemberType]
+        self._time_position = float(self._mpv.time_pos) if self._mpv.time_pos is not None else None
         self.seek_callbacks(self._time_position or 0)
 
     def _handle_end_file(self, event: MpvEvent) -> None:
