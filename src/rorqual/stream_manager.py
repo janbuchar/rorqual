@@ -109,11 +109,11 @@ class StreamManager:
             buffer.write(cached_data)
             return buffer
 
-        if id not in self._buffers:
-            self.fetching_state_callbacks(id, "pending")
-
-            async with self._queue_condition:
+        async with self._queue_condition:
+            # Checked under the lock: a second queue entry would stream into the same buffer again, under mpv's feet
+            if id not in self._buffers and id not in self._queue:
+                self.fetching_state_callbacks(id, "pending")
                 self._queue.append(id)
                 self._queue_condition.notify_all()
 
-        return self._buffers.setdefault(id, Buffer())
+            return self._buffers.setdefault(id, Buffer())
