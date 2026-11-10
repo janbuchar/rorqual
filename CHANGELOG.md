@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## Release 12 - 2026-11-10
+
+### 🚀 Features
+
+- Clear playlist from the album tree as well (#38)
+
+### 🐛 Bug Fixes
+
+- Fix stutter on playback start (#37)
+
 ## Release 11 - 2026-10-19
 
 ### 🚀 Features

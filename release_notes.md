@@ -1,11 +1,10 @@
-## Release 11 - 2026-10-19
+## Release 12 - 2026-11-10
 
 ### 🚀 Features
 
-- Improved album list UX (#36)
+- Clear playlist from the album tree as well (#38)
 
 ### 🐛 Bug Fixes
 
-- Send playback position updates over MPRIS
-- Fix type error
+- Fix stutter on playback start (#37)
 
