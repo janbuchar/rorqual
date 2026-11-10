@@ -12,7 +12,7 @@ jobs:
     name: Type check
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install system dependencies
         shell: bash
@@ -20,12 +20,12 @@ jobs:
           sudo apt update && sudo apt install -y libcairo2-dev libcairo2 libgirepository-2.0-dev gir1.2-glib-2.0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.13"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10.3.3
 
       - name: Install dependencies
         shell: bash
@@ -41,7 +41,7 @@ jobs:
     name: Lint check
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install system dependencies
         shell: bash
@@ -49,12 +49,12 @@ jobs:
           sudo apt update && sudo apt install -y libcairo2-dev libcairo2 libgirepository-2.0-dev gir1.2-glib-2.0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.13"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10.3.3
 
       - name: Install dependencies
         shell: bash
@@ -70,3 +70,32 @@ jobs:
         shell: bash
         run: |
           uv run ruff format --check
+  test:
+    runs-on: ubuntu-latest
+    name: Tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install system dependencies
+        shell: bash
+        run: |
+          sudo apt update && sudo apt install -y libcairo2-dev libcairo2 libgirepository-2.0-dev gir1.2-glib-2.0
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.3
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          uv sync
+
+      - name: Run tests
+        shell: bash
+        run: |
+          uv run pytest

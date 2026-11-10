@@ -2,9 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import os
 import secrets
+import tempfile
 from collections.abc import AsyncGenerator, Generator, Mapping
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import BinaryIO, Self
 
 import httpx
@@ -176,30 +179,48 @@ class SubsonicClient:
 
 
 class Buffer:
-    def __init__(self) -> None:
-        self.data = bytearray()
+    """A stream backed by a file that can be read while it's being written. Downloads are staged in `staging_dir`."""
+
+    def __init__(self, staging_dir: Path | None = None) -> None:
+        self.staging_dir = staging_dir
+        self.path: Path | None = None
+        self._file: BinaryIO  # set by `allocate` or `from_file`, before anything reads or writes
+        self.size = 0
         self.bytes_written = 0
         self.cursor = 0
         self.started = asyncio.Event()
         self.finished = asyncio.Event()
         self.data_written = asyncio.Event()
 
+    @classmethod
+    def from_file(cls, file: BinaryIO) -> Self:
+        buffer = cls()
+        buffer._file = file
+        buffer.size = buffer.bytes_written = os.fstat(file.fileno()).st_size
+        buffer.started.set()
+        buffer.finished.set()
+        return buffer
+
     def allocate(self, size: int) -> None:
+        fd, path = tempfile.mkstemp(dir=self.staging_dir)
+        self._file = open(fd, "r+b")  # noqa: SIM115 - lives as long as the buffer
+        self.path = Path(path)
+        self.size = size
         self.started.set()
-        self.data = bytearray(size)
 
     def write(self, data: bytes) -> None:
-        self.data[self.bytes_written : self.bytes_written + len(data)] = data
+        self._file.write(data)
+        self._file.flush()
         self.bytes_written += len(data)
         self.data_written.set()
 
     @property
     def complete(self) -> bool:
-        return 0 < self.bytes_written == len(self.data)
+        return 0 < self.bytes_written == self.size
 
-    async def read(self, size: int) -> bytearray:
+    async def read(self, size: int) -> bytes:
         await self.started.wait()
-        requested_pos = min(self.cursor + size, len(self.data))
+        requested_pos = min(self.cursor + size, self.size)
 
         finished = asyncio.create_task(self.finished.wait())
         while not finished.done() and requested_pos > self.bytes_written:
@@ -210,15 +231,20 @@ class Buffer:
 
         finished.cancel()
 
-        try:
-            return self.data[self.cursor : requested_pos]
-        finally:
-            self.cursor = requested_pos
+        # Short of `requested_pos` only if the download failed - mpv takes that as the end of the stream
+        data = os.pread(self._file.fileno(), requested_pos - self.cursor, self.cursor)
+        self.cursor += len(data)
+        return data
 
     def seek(self, pos: int) -> int:
-        self.cursor = min(pos, len(self.data))
+        self.cursor = min(pos, self.size)
         self.data_written.set()
         return self.cursor
 
     def finalize(self) -> None:
         self.finished.set()
+
+    def discard(self) -> None:
+        """Delete the staged download, if any. Open readers keep working."""
+        if self.path is not None:
+            self.path.unlink(missing_ok=True)

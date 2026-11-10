@@ -1,6 +1,7 @@
 import os
 from contextlib import suppress
 from pathlib import Path
+from typing import BinaryIO
 
 from platformdirs import user_cache_dir
 
@@ -17,6 +18,12 @@ class BlobCache:
         self._recently_fetched.add(key)
         self._cleanup()
 
+    def adopt(self, key: str, path: Path) -> None:
+        """Move a finished file into the cache. It must live on the same filesystem."""
+        os.replace(path, self._root / key)
+        self._recently_fetched.add(key)
+        self._cleanup()
+
     def discard(self, key: str) -> None:
         self._recently_fetched.discard(key)
         with suppress(OSError):
@@ -29,19 +36,23 @@ class BlobCache:
         return {path.name for path in self._root.iterdir()}
 
     def read(self, key: str) -> bytes | None:
-        path = self._root / key
+        if (file := self.open(key)) is None:
+            return None
 
+        with file:
+            return file.read()
+
+    def open(self, key: str) -> BinaryIO | None:
         try:
-            result = path.read_bytes()
+            file = (self._root / key).open("rb")
         except OSError:
-            result = None
+            return None
 
-        if result:
-            self._recently_fetched.add(key)
-            with suppress(OSError):
-                os.utime(path)
+        self._recently_fetched.add(key)
+        with suppress(OSError):
+            os.utime(file.fileno())
 
-        return result
+        return file
 
     def _cleanup(self) -> None:
         files = list(self._root.iterdir())

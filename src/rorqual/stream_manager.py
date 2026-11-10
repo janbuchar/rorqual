@@ -1,8 +1,12 @@
 import asyncio
+import tempfile
 from collections import deque
 from collections.abc import Iterable
+from pathlib import Path
 from typing import Literal, NoReturn, cast
 from weakref import WeakValueDictionary
+
+from platformdirs import user_cache_dir
 
 from .caching import BlobCache
 from .callbacks import CallbackList
@@ -20,6 +24,8 @@ class StreamManager:
         self._config = config
         self._subsonic = subsonic
         self._cache = BlobCache("audio", config.audio_cache_size)
+        # Next to the cache, so that finished downloads can be renamed into it. Per process, removed on exit.
+        self._staging = tempfile.TemporaryDirectory(prefix="partial-", dir=user_cache_dir("rorqual"))
 
         self._buffers = WeakValueDictionary[StreamId, Buffer]()
         self._queue_condition = asyncio.Condition()
@@ -37,16 +43,21 @@ class StreamManager:
                 continue
 
             id = self._queue.popleft()
-            buffer = self._buffers.setdefault(id, Buffer())
+            buffer = self._buffers.setdefault(id, Buffer(Path(self._staging.name)))
 
             task = cast(asyncio.Task, asyncio.current_task())
             self._task_streams[task] = id
 
             self.fetching_state_callbacks(id, "fetching")
-            await self._subsonic.stream(id, buffer)
+            try:
+                await self._subsonic.stream(id, buffer)
+            finally:
+                if not buffer.complete:
+                    buffer.discard()
 
             if buffer.complete:
-                self._cache.store(id, buffer.data)
+                assert buffer.path is not None
+                self._cache.adopt(id, buffer.path)
                 self.fetching_state_callbacks(id, "done")
             else:
                 self.fetching_state_callbacks(id, "failed")
@@ -101,19 +112,16 @@ class StreamManager:
         if id in self._buffers:
             return self._buffers[id]
 
-        cached_data = self._cache.read(id)
-        if cached_data is not None:
+        cached_file = self._cache.open(id)
+        if cached_file is not None:
             self.fetching_state_callbacks(id, "done")
-            buffer = Buffer()
-            buffer.allocate(len(cached_data))
-            buffer.write(cached_data)
-            return buffer
+            return Buffer.from_file(cached_file)
 
-        if id not in self._buffers:
-            self.fetching_state_callbacks(id, "pending")
-
-            async with self._queue_condition:
+        async with self._queue_condition:
+            # Checked under the lock: a second queue entry would stream into the same buffer again, under mpv's feet
+            if id not in self._buffers and id not in self._queue:
+                self.fetching_state_callbacks(id, "pending")
                 self._queue.append(id)
                 self._queue_condition.notify_all()
 
-        return self._buffers.setdefault(id, Buffer())
+            return self._buffers.setdefault(id, Buffer(Path(self._staging.name)))

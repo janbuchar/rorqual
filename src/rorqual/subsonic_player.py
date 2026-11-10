@@ -257,9 +257,9 @@ class SubsonicStreamFrontend:
     def size(self) -> int | None:
         if not self.buffer.started.is_set():
             return None
-        return len(self.buffer.data)
+        return self.buffer.size
 
-    def read(self, size: int) -> bytearray:
+    def read(self, size: int) -> bytes:
         return asyncio.run_coroutine_threadsafe(self.buffer.read(size), self.loop).result()
 
     def seek(self, pos: int) -> int:
