@@ -29,6 +29,9 @@ class AlbumTree(Widget):
             super().__init__()
             self.album = album
 
+    class ClearPlaylist(Message):
+        pass
+
     media_library = reactive[MediaLibrary | None](None)
     offline = reactive(False)
 
@@ -38,6 +41,7 @@ class AlbumTree(Widget):
         ("l", "expand", "Expand"),
         ("h", "collapse", "Collapse"),
         ("a", "add_to_playlist", "Add to playlist"),
+        ("c", "clear_playlist", "Clear playlist"),
         ("g", "go_to_top", "Go to top"),
         ("G", "go_to_bottom", "Go to bottom"),
     ]
@@ -181,3 +185,6 @@ class AlbumTree(Widget):
 
             self._album_songs[album.id] = [song.id for song in album.song]
             self.post_message(self.AddAlbumToPlaylist(album))
+
+    async def action_clear_playlist(self) -> None:
+        self.post_message(self.ClearPlaylist())
