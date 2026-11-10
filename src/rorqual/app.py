@@ -115,6 +115,7 @@ class RorqualApp(App[None]):
         self.player.toggle_paused()
 
     @on(Playlist.ClearPlaylist)
+    @on(AlbumTree.ClearPlaylist)
     def clear_playlist(self) -> None:
         self.player.playlist_clear()
 
