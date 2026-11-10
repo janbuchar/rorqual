@@ -17,7 +17,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           token: ${{ secrets.PERSONAL_TOKEN }}
@@ -32,7 +32,7 @@ jobs:
             head -n 1) )) >> "$GITHUB_OUTPUT"
 
       - name: Update changelog
-        uses: orhun/git-cliff-action@v4.6.0
+        uses: orhun/git-cliff-action@v4.9.1
         with:
           config: cliff.toml
           args: --tag "release-${{ steps.determine_number.outputs.release_number }}"
@@ -40,7 +40,7 @@ jobs:
           OUTPUT: CHANGELOG.md
 
       - name: Generate release notes
-        uses: orhun/git-cliff-action@v4.6.0
+        uses: orhun/git-cliff-action@v4.9.1
         with:
           config: cliff.toml
           args: --tag "release-${{ steps.determine_number.outputs.release_number }}" --unreleased --strip all
@@ -49,14 +49,14 @@ jobs:
 
       - name: Commit changes
         id: commit
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@v11
         with:
           author_name: Jan Buchar
           author_email: ci@bucharjan.cz
-          message: "chore(release): Release ${{ steps.determine_number.outputs.release_number }}} [skip ci]"
+          message: "chore(release): Release ${{ steps.determine_number.outputs.release_number }} [skip ci]"
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: "release-${{ steps.determine_number.outputs.release_number }}"
           name: "Release ${{ steps.determine_number.outputs.release_number }}"
@@ -71,15 +71,15 @@ jobs:
       RELEASE_NUMBER: ${{ needs.gh_release.outputs.release_number }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.13"
       - name: Install uv
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v10
       - name: Use cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: out/
           key: ${{ github.run_id }}
@@ -105,14 +105,14 @@ jobs:
     needs: prepare_pkgbuild
     steps:
       - name: Use cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: out/
           key: ${{ github.run_id }}
       - name: Prepare output dir
         run: mkdir -p out
       - name: Setup AUR SSH
-        uses: webfactory/ssh-agent@v0.7.0
+        uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.AUR_PRIVATE_KEY }}
       - name: Checkout AUR package
@@ -127,7 +127,7 @@ jobs:
           mv out/* ./
           rm -rf out
       - name: Prepare .SRCINFO
-        uses: heyhusen/archlinux-package-action@v2.2.1
+        uses: heyhusen/archlinux-package-action@v3.0.1
         with:
           flags: ''
           namcap: false
